@@ -322,6 +322,52 @@ class Cigar:
 
         return reference_msa, query_msa
 
+    @staticmethod
+    def msa_to_cigar(reference: str, query: str) -> 'Cigar':
+        """
+        Converts a Multiple Sequence Alignment (MSA) of a reference and a query sequence
+        into a CIGAR object. Alignments are expected to be strings of equal length where
+        gaps are represented by '-' characters.
+
+        :param reference: The reference sequence in MSA format.
+        :param query: The query sequence in MSA format.
+        :return: A Cigar object representing the alignment.
+        """
+
+        if len(reference) != len(query):
+            raise ValueError("Reference and query sequences must be of the same length.")
+
+        operations = []
+        curr_op = ''
+        count = 0
+
+        for ref_base, query_base in zip(reference, query):
+            if ref_base == '-' and query_base == '-':
+                # This scenario should not happen in a correct MSA
+                continue
+            elif ref_base == '-':
+                op = 'I'  # Insertion in reference
+            elif query_base == '-':
+                op = 'D'  # Deletion from reference
+            elif ref_base == query_base:
+                op = 'M'  # Match/Mismatch (Exact match)
+            else:
+                op = 'M'  # Match/Mismatch (Mismatch)
+
+            if op == curr_op:
+                count += 1
+            else:
+                if curr_op:  # Not the first operation
+                    operations.append((count, Cigar.parse_operation(curr_op)))
+                curr_op = op
+                count = 1
+
+        # Don't forget to add the last operation
+        if curr_op:
+            operations.append((count, Cigar.parse_operation(curr_op)))
+
+        return Cigar(operations)
+
     @cached_property
     def op_length(self):
         return sum(1 for x in self.iterate_operations())

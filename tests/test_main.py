@@ -680,6 +680,68 @@ def test_illigal_cigar_to_msa(cigar, reference_seq, query_seq):
         Cigar.coerce(cigar).to_msa(reference_seq, query_seq)
 
 
+@pytest.mark.parametrize(
+    "reference, query, expected_cigar_str",
+    [
+        # Matches only
+        ("ACTGACTG", "ACTGACTG", "8M"),
+        # Deletions only from reference
+        ("ACTG----ACTG", "ACTGACTG----", "4M4I4D"),
+        # Insertions only in query
+        ("----ACTG", "ACTGACTG", "4I4M"),
+        # Alternating matches and mismatches
+        ("ACGTACGT", "ACGAAGTT", "8M"),  # Mismatches treated as matches
+        # Edge case: empty sequences
+        ("", "", ""),
+        # Continuous insertions and deletions
+        ("AAAA----TTTT", "----GGGG----", "4D4I4D"),
+        # Continuous operations of each kind
+        ("A---CGT", "ATTT---", "1M3I3D"),
+        # More complex mixed operations
+        ("GG--C--TTA--A", "GGTT---AACCCA", "2M2I1D3M2I1M"),
+        # Same charactor deletion and insertion
+        ("AAA---AAA", "---AAA---", "3D3I3D"),
+        # Insertions at the start and end
+        ("---ACTG---", "TTTACTGGGG", "3I4M3I"),
+        # Deletions at the start and end
+        ("TTTACTGGGG", "---ACTG---", "3D4M3D"),
+        # All operations
+        ("-A-C-G-", "Z-Z-Z-Z", "1I1D1I1D1I1D1I"),
+        # Long mismatch sequence
+        ("AAAAAAAAAA", "TTTTTTTTTT", "10M"),
+        # Alternating insertions and deletions
+        ("-B-D-", "A-C-E", "1I1D1I1D1I"),
+        # Single character reference and query
+        ("A", "A", "1M"),
+        ("A", "-", "1D"),
+        ("-", "A", "1I"),
+        # Long sequence with only one operation
+        ("-" * 100, "A" * 100, "100I"),
+        ("A" * 100, "-" * 100, "100D"),
+        ("A" * 50 + "-" * 50, "-" * 50 + "A" * 50, "50D50I"),
+        # Sequence with all operations
+        ("A-C-T-G", "A-G-C-T", "4M"),
+    ]
+)
+def test_msa_to_cigar(reference, query, expected_cigar_str):
+    cigar = Cigar.msa_to_cigar(reference, query)
+    assert str(cigar) == expected_cigar_str, f"Expected {expected_cigar_str}, got {str(cigar)}"
+
+
+@pytest.mark.parametrize(
+    "reference, query",
+    [
+        # Length mismatch due to improper alignment representation
+        ("ACTG", "ACG"),
+        # Length mismatch due to additional gap in one sequence
+        ("ACTG-", "ACTG"),
+    ]
+)
+def test_invalid_msa_to_cigar_due_to_length_mismatch(reference, query):
+    with pytest.raises(ValueError, match="Reference and query sequences must be of the same length."):
+        Cigar.msa_to_cigar(reference, query)
+
+
 connect_cigar_hits_cases = [
     # Non-overlapping hits should be connected with deletions/insertions
     (["4M@1->1", "4M@8->10"], ["4M5D3I4M@1->1"]),
