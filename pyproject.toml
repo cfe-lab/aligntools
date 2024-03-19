@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aligntools"
+version = "1.0.0"
+description = "A Python library for handling CIGAR alignments and related alignment formats."
+readme = "README.md"
+license = "GPL-3.0"
+authors = [
+    { name = "British Columbia Centre for Excellence in HIV/AIDS", email = "vmysak@bccfe.ca" },
+]
+dependencies = []
+
+
+[project.optional-dependencies]
+test = [
+    # Dependencies required for running the test suite
+    "pytest>=6.0",
+    "pytest-cov",
+]
+dev = [
+    # Dependencies required for development (linting, type checking, etc.)
+    "flake8",
+    "mypy==1.9.0",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [ "src/aligntools" ]
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+markers = [
+  "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  "overnight: for tests that take hours to complete (deselect with '-m \"not overnight\"')",
+  "serial"
+]
+
+[tool.mypy]
+files = ["src"]
+ignore_missing_imports = true
+strict_optional = true
+allow_untyped_calls = true
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+strict = true
