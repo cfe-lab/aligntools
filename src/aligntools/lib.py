@@ -323,7 +323,7 @@ class Cigar:
         return reference_msa, query_msa
 
     @staticmethod
-    def msa_to_cigar(reference: str, query: str) -> 'Cigar':
+    def from_msa(reference: str, query: str) -> 'Cigar':
         """
         Converts a Multiple Sequence Alignment (MSA) of a reference and a query sequence
         into a CIGAR object. Alignments are expected to be strings of equal length where

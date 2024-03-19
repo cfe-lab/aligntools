@@ -723,8 +723,8 @@ def test_illigal_cigar_to_msa(cigar, reference_seq, query_seq):
         ("A-C-T-G", "A-G-C-T", "4M"),
     ]
 )
-def test_msa_to_cigar(reference, query, expected_cigar_str):
-    cigar = Cigar.msa_to_cigar(reference, query)
+def test_from_msa(reference, query, expected_cigar_str):
+    cigar = Cigar.from_msa(reference, query)
     assert str(cigar) == expected_cigar_str, f"Expected {expected_cigar_str}, got {str(cigar)}"
 
 
@@ -737,9 +737,9 @@ def test_msa_to_cigar(reference, query, expected_cigar_str):
         ("ACTG-", "ACTG"),
     ]
 )
-def test_invalid_msa_to_cigar_due_to_length_mismatch(reference, query):
+def test_invalid_from_msa_due_to_length_mismatch(reference, query):
     with pytest.raises(ValueError, match="Reference and query sequences must be of the same length."):
-        Cigar.msa_to_cigar(reference, query)
+        Cigar.from_msa(reference, query)
 
 
 connect_cigar_hits_cases = [
