@@ -11,7 +11,7 @@ from functools import cached_property, reduce
 from fractions import Fraction
 
 
-class IntDict(dict):
+class IntDict(dict[int, int]):
     """
     An extension of the basic Python dictionary designed for integer-to-integer mappings.
 
@@ -21,12 +21,12 @@ class IntDict(dict):
     directly in mappings but are within the range of interest for the domain and codomain.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.domain: Set[int] = set()   # superset of self.keys()
         self.codomain: Set[int] = set()  # superset of self.values()
 
-    def extend(self, key: Optional[int], value: Optional[int]):
+    def extend(self, key: Optional[int], value: Optional[int]) -> None:
         if key is not None and value is not None:
             self[key] = value
 
@@ -36,10 +36,10 @@ class IntDict(dict):
         if value is not None:
             self.codomain.add(value)
 
-    def left_max(self, index) -> Optional[int]:
+    def left_max(self, index: int) -> Optional[int]:
         return max((v for (k, v) in self.items() if k <= index), default=None)
 
-    def right_min(self, index) -> Optional[int]:
+    def right_min(self, index: int) -> Optional[int]:
         return min((v for (k, v) in self.items() if k >= index), default=None)
 
     def translate(self, domain_delta: int, codomain_delta: int) -> 'IntDict':
@@ -72,7 +72,7 @@ class CoordinateMapping:
     association of these coordinates with their respective operations in the alignment process.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.ref_to_query = IntDict()
         self.query_to_ref = IntDict()
         self.ref_to_op = IntDict()
@@ -81,7 +81,7 @@ class CoordinateMapping:
     def extend(self,
                ref_index: Optional[int],
                query_index: Optional[int],
-               op_index: int):
+               op_index: int) -> None:
 
         self.ref_to_query.extend(ref_index, query_index)
         self.query_to_ref.extend(query_index, ref_index)
@@ -143,11 +143,11 @@ class Cigar:
     CIGAR strings are defined in the SAM specification (https://samtools.github.io/hts-specs/SAMv1.pdf).
     """
 
-    def __init__(self, data) -> None:
+    def __init__(self, data: Iterable[Tuple[int, CigarActions]]) -> None:
         self._data: List[Tuple[int, CigarActions]] = list(Cigar.normalize(data))
 
     @staticmethod
-    def coerce(obj: Union['Cigar', str, Iterable[Tuple[int, CigarActions]]]):
+    def coerce(obj: Union['Cigar', str, Iterable[Tuple[int, CigarActions]]]) -> 'Cigar':
         if isinstance(obj, Cigar):
             return obj
 
@@ -203,7 +203,7 @@ class Cigar:
             else:
                 yield operation, None, None
 
-    def slice_operations(self, start_inclusive, end_noninclusive) -> 'Cigar':
+    def slice_operations(self, start_inclusive: int, end_noninclusive: int) -> 'Cigar':
         """
         Creates a new Cigar object by slicing the current one from start_inclusive to
         end_noninclusive. Note that slicing is done at the level of individual operations,
@@ -221,7 +221,10 @@ class Cigar:
         """ Return a copy of the Cigar with leading (unmatched) query elements removed. """
 
         min_r = min(self.coordinate_mapping.ref_to_query.keys(), default=None)
-        min_op = self.coordinate_mapping.ref_to_op.get(min_r, float("inf"))
+        if min_r is None:
+            min_op = float("inf")
+        else:
+            min_op = self.coordinate_mapping.ref_to_op.get(min_r, float("inf"))
 
         ops = [(1, op) for i, (op, ref_pointer, query_pointer)
                in enumerate(self.iterate_operations_with_pointers())
@@ -232,7 +235,10 @@ class Cigar:
         """ Return a copy of the Cigar with trailing (unmatched) query elements removed. """
 
         max_r = max(self.coordinate_mapping.ref_to_query.keys(), default=None)
-        max_op = self.coordinate_mapping.ref_to_op.get(max_r, float("-inf"))
+        if max_r is None:
+            max_op = float("-inf")
+        else:
+            max_op = self.coordinate_mapping.ref_to_op.get(max_r, float("-inf"))
 
         ops = [(1, op) for i, (op, ref_pointer, query_pointer)
                in enumerate(self.iterate_operations_with_pointers())
@@ -243,7 +249,10 @@ class Cigar:
         """ Return a copy of the Cigar with leading (unmatched) reference elements removed. """
 
         min_q = min(self.coordinate_mapping.query_to_ref.keys(), default=None)
-        min_op = self.coordinate_mapping.query_to_op.get(min_q, float("inf"))
+        if min_q is None:
+            min_op = float("inf")
+        else:
+            min_op = self.coordinate_mapping.query_to_op.get(min_q, float("inf"))
 
         ops = [(1, op) for i, (op, ref_pointer, query_pointer)
                in enumerate(self.iterate_operations_with_pointers())
@@ -254,7 +263,10 @@ class Cigar:
         """ Return a copy of the Cigar with trailing (unmatched) reference elements removed. """
 
         max_q = max(self.coordinate_mapping.query_to_ref.keys(), default=None)
-        max_op = self.coordinate_mapping.query_to_op.get(max_q, float("-inf"))
+        if max_q is None:
+            max_op = float("-inf")
+        else:
+            max_op = self.coordinate_mapping.query_to_op.get(max_q, float("-inf"))
 
         ops = [(1, op) for i, (op, ref_pointer, query_pointer)
                in enumerate(self.iterate_operations_with_pointers())
@@ -280,7 +292,7 @@ class Cigar:
 
         return mapping
 
-    def to_msa(self, reference_seq, query_seq) -> Tuple[str, str]:
+    def to_msa(self, reference_seq: str, query_seq: str) -> Tuple[str, str]:
         """
         Constructs a multiple sequence alignment (MSA) representation for this Cigar, using the original reference
         and query sequences. It aligns the sequences according to the CIGAR operations, introducing gaps ('-')
@@ -354,7 +366,7 @@ class Cigar:
         return [k for (k, v) in Cigar.OP_MAPPING.items() if v == op][0]
 
     @staticmethod
-    def parse(string) -> 'Cigar':
+    def parse(string: str) -> 'Cigar':
         """
         Parses a CIGAR string into a Cigar object.
 
@@ -375,7 +387,7 @@ class Cigar:
         return Cigar(data)
 
     @staticmethod
-    def normalize(cigar_lst) -> Iterable[Tuple[int, CigarActions]]:
+    def normalize(cigar_lst: Iterable[Tuple[int, CigarActions]]) -> Iterable[Tuple[int, CigarActions]]:
         """
         Goes through the list appending operations to the CIGAR sequence,
         checking for type correctness and performing normalization
@@ -416,10 +428,10 @@ class Cigar:
         if last_item:
             yield last_item[0], last_item[1]
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, Cigar) and self._data == other._data
 
-    def __add__(self, other: 'Cigar'):
+    def __add__(self, other: 'Cigar') -> 'Cigar':
         return Cigar(self._data + other._data)
 
     def __repr__(self):
@@ -470,7 +482,7 @@ class CigarHit:
         return self.q_ei + 1 - self.q_st
 
     @staticmethod
-    def from_default_alignment(r_st, r_ei, q_st, q_ei):
+    def from_default_alignment(r_st: int, r_ei: int, q_st: int, q_ei: int) -> 'CigarHit':
         """
         A convenience method that creates a CigarHit instance representing a default alignment,
         where there are only deletions in the reference sequence and only insertions in the query.
@@ -483,21 +495,21 @@ class CigarHit:
 
         return CigarHit(cigar, r_st=r_st, r_ei=r_ei, q_st=q_st, q_ei=q_ei)
 
-    def overlaps(self, other) -> bool:
+    def overlaps(self, other: 'CigarHit') -> bool:
         """
         Determines whether this CigarHit overlaps with another in terms of reference or query coordinates.
         Two hits are considered overlapping if their alignment ranges on the reference or query sequence overlap.
         Note: Assumes that both CigarHit instances pertain to the same pair of reference and query sequences.
         """
 
-        def intervals_overlap(x, y):
+        def intervals_overlap(x: Tuple[int, int], y: Tuple[int, int]) -> bool:
             """ Check if two intervals [x0, x1] and [y0, y1] overlap. """
             return x[0] <= y[1] and x[1] >= y[0]
 
         return intervals_overlap((self.r_st, self.r_ei), (other.r_st, other.r_ei)) \
             or intervals_overlap((self.q_st, self.q_ei), (other.q_st, other.q_ei))
 
-    def touches(self, other) -> bool:
+    def touches(self, other: 'CigarHit') -> bool:
         """
         Checks if the end of this CigarHit is immediately adjacent to the start of another one.
         Note: Assumes that both CigarHit instances pertain to the same pair of reference and query sequences.
@@ -522,6 +534,9 @@ class CigarHit:
                     gap_start = op_index
             else:
                 if gap_start is not None:
+                    if op_index is None:
+                        op_index = -1
+
                     cigar = self.cigar.slice_operations(gap_start, op_index)
                     if is_deletions:
                         q_st = last_query_index
@@ -545,7 +560,7 @@ class CigarHit:
     def insertions(self) -> Iterable['CigarHit']:
         return self._gaps(is_deletions=False)
 
-    def __add__(self, other):
+    def __add__(self, other: 'CigarHit') -> 'CigarHit':
         """
         Only adds CigarHits that are touching.
         The addition is simply a concatenation of two Cigar strings, and adjustment of hit coordinates.
@@ -576,7 +591,7 @@ class CigarHit:
     def epsilon(self):
         return Fraction(1, self.cigar.op_length * 3 + 1)
 
-    def _ref_cut_to_op_cut(self, cut_point):
+    def _ref_cut_to_op_cut(self, cut_point: Fraction) -> Fraction:
         mapping = self.coordinate_mapping
 
         left_op_cut_point = mapping.ref_to_op.left_max(floor(cut_point))
@@ -587,7 +602,9 @@ class CigarHit:
         if right_op_cut_point is None:
             right_op_cut_point = self.cigar.op_length
 
-        def lerp(start, end, t): return (1 - t) * start + t * end
+        def lerp(start: int, end: int, t: Fraction) -> Fraction:
+            return (1 - t) * start + t * end
+
         op_cut_point = lerp(left_op_cut_point, right_op_cut_point,
                             cut_point - floor(cut_point))
 
@@ -597,7 +614,7 @@ class CigarHit:
 
         return op_cut_point
 
-    def _slice(self, r_st, q_st, o_st, o_ei):
+    def _slice(self, r_st: int, q_st: int, o_st: int, o_ei: int) -> 'CigarHit':
         cigar = self.cigar.slice_operations(o_st, o_ei + 1)
         r_ei = r_st + cigar.ref_length - 1
         q_ei = q_st + cigar.query_length - 1
@@ -722,7 +739,7 @@ def connect_cigar_hits(cigar_hits: List[CigarHit]) -> List[CigarHit]:
     # Segregate independent matches.
     sorted_groups: List[List[CigarHit]] = []
 
-    def find_group(phit):
+    def find_group(phit: CigarHit) -> None:
         for group in sorted_groups:
             if phit.q_st > group[-1].q_st:
                 group.append(phit)
