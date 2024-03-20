@@ -247,7 +247,7 @@ cigar_hit_ref_cut_cases = [
         IndexError("Cut point out of reference bounds"),
     ),  # Empty string cannot be cut
     ("9I@1->1", 3.5, IndexError("Cut point out of reference bounds")),
-    ("9M@1->1", 4, ValueError("Cut accepts fractions, not integers")),
+    ("9M@1->1", 4, IndexError("Cut accepts fractions, not integers")),
 ]
 
 

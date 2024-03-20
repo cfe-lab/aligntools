@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from functools import cached_property, reduce
 from fractions import Fraction
 
+import aligntools.libexceptions as ex
+
 
 class IntDict(dict[int, int]):
     """
@@ -157,7 +159,7 @@ class Cigar:
         if isinstance(obj, list) or isinstance(obj, tuple):
             return Cigar(obj)
 
-        raise TypeError(f"Cannot coerce {obj!r} to CIGAR string.")
+        raise ex.CoersionError(f"Cannot coerce {obj!r} to CIGAR string.")
 
     def iterate_operations(self) -> Iterable[CigarActions]:
         """
@@ -318,7 +320,7 @@ class Cigar:
                     query_msa += '-'
 
             except IndexError:
-                raise ValueError("CIGAR string corresponds to a larger match than either reference or query.")
+                raise ex.ParseError("CIGAR string corresponds to a larger match than either reference or query.")
 
         return reference_msa, query_msa
 
@@ -335,7 +337,7 @@ class Cigar:
         """
 
         if len(reference) != len(query):
-            raise ValueError("Reference and query sequences must be of the same length.")
+            raise ex.ParseError("Reference and query sequences must be of the same length.")
 
         operations = []
         curr_op = ''
@@ -405,7 +407,7 @@ class Cigar:
         if operation in Cigar.OP_MAPPING:
             return Cigar.OP_MAPPING[operation]
         else:
-            raise ValueError(f"Unexpected CIGAR action: {operation}.")
+            raise ex.InvalidOperationError(f"Unexpected CIGAR action: {operation}.")
 
     @staticmethod
     def operation_to_str(op: CigarActions) -> str:
@@ -428,7 +430,7 @@ class Cigar:
                 data.append((int(num), Cigar.parse_operation(operation)))
                 string = string[match.end():]
             else:
-                raise ValueError(f"Invalid CIGAR string. Invalid part: {string[:20]}")
+                raise ex.ParseError(f"Invalid CIGAR string. Invalid part: {string[:20]}")
 
         return Cigar(data)
 
@@ -445,17 +447,17 @@ class Cigar:
         for item in cigar_lst:
             # Type checking
             if not isinstance(item, list) and not isinstance(item, tuple):
-                raise ValueError(f"Invalid CIGAR list: {item!r} is not a tuple.")
+                raise ex.InvalidOperationError(f"Invalid CIGAR list: {item!r} is not a tuple.")
             if len(item) != 2:
-                raise ValueError(f"Invalid CIGAR list: {item!r} has a bad length.")
+                raise ex.InvalidOperationError(f"Invalid CIGAR list: {item!r} has a bad length.")
 
             num, operation = item
             if isinstance(operation, int):
                 operation = CigarActions(operation)
             if not isinstance(num, int) or not isinstance(operation, CigarActions):
-                raise ValueError(f"Invalid CIGAR list: {item!r} is not a number/operation tuple.")
+                raise ex.InvalidOperationError(f"Invalid CIGAR list: {item!r} is not a number/operation tuple.")
             if num < 0:
-                raise ValueError("Invalid CIGAR list: number of operations is negative.")
+                raise ex.InvalidOperationError("Invalid CIGAR list: number of operations is negative.")
 
             # Normalization
             if num == 0:
@@ -512,12 +514,12 @@ class CigarHit:
 
     def __post_init__(self):
         if self.ref_length != self.cigar.ref_length:
-            raise ValueError(f"CIGAR string maps {self.cigar.ref_length}"
-                             f" reference positions, but CIGAR hit range is {self.ref_length}")
+            raise ex.CigarHitRangeError(f"CIGAR string maps {self.cigar.ref_length}"
+                                        f" reference positions, but CIGAR hit range is {self.ref_length}")
 
         if self.query_length != self.cigar.query_length:
-            raise ValueError(f"CIGAR string maps {self.cigar.query_length}"
-                             f" query positions, but CIGAR hit range is {self.query_length}")
+            raise ex.CigarHitRangeError(f"CIGAR string maps {self.cigar.query_length}"
+                                        f" query positions, but CIGAR hit range is {self.query_length}")
 
     @property
     def ref_length(self):
@@ -613,7 +615,8 @@ class CigarHit:
         """
 
         if not self.touches(other):
-            raise ValueError("Cannot combine CIGAR hits that do not touch in both reference and query coordinates")
+            raise ex.CigarConnectError("Cannot combine CIGAR hits that do not touch "
+                                       "in both reference and query coordinates")
 
         return CigarHit(cigar=self.cigar + other.cigar,
                         r_st=self.r_st,
@@ -624,11 +627,11 @@ class CigarHit:
     def connect(self, other: 'CigarHit') -> 'CigarHit':
         """
         Inserts deletions/insertions between self and other,
-        then ajusts boundaries appropriately.
+        then adjusts boundaries appropriately.
         """
 
         if self.overlaps(other):
-            raise ValueError("Cannot combine overlapping CIGAR hits")
+            raise ex.CigarConnectError("Cannot combine overlapping CIGAR hits")
 
         filler = CigarHit.from_default_alignment(self.r_ei + 1, other.r_st - 1, self.q_ei + 1, other.q_st - 1)
         return self + filler + other
@@ -681,11 +684,11 @@ class CigarHit:
 
         fcut_point: Fraction = Fraction(cut_point)
         if fcut_point.denominator == 1:
-            raise ValueError("Cut accepts fractions, not integers")
+            raise ex.CigarCutError("Cut accepts fractions, not integers")
 
         if self.ref_length == 0 or \
            not (self.r_st - 1 < fcut_point < self.r_ei + 1):
-            raise IndexError("Cut point out of reference bounds")
+            raise ex.CigarCutError("Cut point out of reference bounds")
 
         op_fcut_point = self._ref_cut_to_op_cut(fcut_point)
         left = self._slice(self.r_st, self.q_st, 0, floor(op_fcut_point))
@@ -767,11 +770,11 @@ def connect_cigar_hits(cigar_hits: List[CigarHit]) -> List[CigarHit]:
     """
 
     if len(cigar_hits) == 0:
-        raise ValueError("Expected a non-empty list of cigar hits")
+        raise ex.EmptyCigarHitListError("Expected a non-empty list of cigar hits")
 
     accumulator: List[CigarHit] = []
 
-    # Collect non-overlaping parts.
+    # Collect non-overlapping parts.
     # Earlier matches have priority over ones that come after.
     for hit in cigar_hits:
         if any(earlier.overlaps(hit) for earlier in accumulator):
