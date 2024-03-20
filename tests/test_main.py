@@ -2,7 +2,8 @@ import pytest
 from math import floor
 import re
 
-from aligntools import Cigar, CigarHit, connect_cigar_hits
+from aligntools import Cigar, CigarHit, connect_cigar_hits, CigarActions
+import aligntools.libexceptions as ex
 
 
 cigar_mapping_cases = [
@@ -234,20 +235,20 @@ cigar_hit_ref_cut_cases = [
     (
         "9M9I9M@1->1",
         20.5,
-        IndexError("Cut point out of reference bounds"),
+        ex.CigarCutError("Cut point out of reference bounds"),
     ),  # 20.5 is bigger than reference (18)
     (
         "@2->2",
         2.5,
-        IndexError("Cut point out of reference bounds"),
+        ex.CigarCutError("Cut point out of reference bounds"),
     ),  # Empty string cannot be cut
     (
         "@2->2",
         1.5,
-        IndexError("Cut point out of reference bounds"),
+        ex.CigarCutError("Cut point out of reference bounds"),
     ),  # Empty string cannot be cut
-    ("9I@1->1", 3.5, IndexError("Cut point out of reference bounds")),
-    ("9M@1->1", 4, IndexError("Cut accepts fractions, not integers")),
+    ("9I@1->1", 3.5, ex.CigarCutError("Cut point out of reference bounds")),
+    ("9M@1->1", 4, ex.CigarCutError("Cut accepts fractions, not integers")),
 ]
 
 
@@ -764,7 +765,7 @@ connect_cigar_hits_cases = [
     # Combining hits including hard-clipping, which should be ignored in alignments
     (["2H5M1H@3->1", "2H5M1H@13->11"], ["2H5M1H5D5I2H5M1H@3->1"]),
     # An empty list of hits should raise a ValueError
-    ([], ValueError("Expected a non-empty list of cigar hits")),
+    ([], ex.EmptyCigarHitListError("Expected a non-empty list of cigar hits")),
     # Before by reference, after by query
     (["4M@8->1", "4M@1->10"], ["4M@8->1", "4M@1->10"]),
 ]
@@ -781,3 +782,90 @@ def test_connect_cigar_hits(hits, expected_result):
         expected_result = list(map(parsed_hit, expected_result))
         result = connect_cigar_hits(hits)
         assert expected_result == result
+
+
+@pytest.mark.parametrize(
+    "obj, expected_error",
+    [
+        (123, ex.CoersionError),  # Integer
+        ({}, ex.CoersionError),  # Dictionary
+        (None, ex.CoersionError),  # None
+        (("2M", CigarActions.MATCH), ex.InvalidOperationError),  # Tuple that is not a valid Cigar or string
+        ([(2, CigarActions.MATCH, 3, 4, 5)], ex.InvalidOperationError),
+        ([("not a number", CigarActions.MATCH)], ex.InvalidOperationError),
+        ([(-42, CigarActions.MATCH)], ex.InvalidOperationError),
+    ]
+)
+def test_invalid_cigar_coercion(obj, expected_error):
+    with pytest.raises(expected_error):
+        Cigar.coerce(obj)
+
+
+@pytest.mark.parametrize(
+    "cigar_str, expected_error",
+    [
+        ("10Z", ex.InvalidOperationError),  # Unknown operation 'Z'
+        ("abc", ex.ParseError),  # Non-numeric prefix
+        ("10", ex.ParseError),  # Missing operation code
+        ("M10", ex.ParseError),  # Invalid syntax; number should precede operation
+        ("1-0M", ex.InvalidOperationError),  # Invalid number
+    ]
+)
+def test_invalid_cigar_string_parsing(cigar_str, expected_error):
+    with pytest.raises(expected_error):
+        Cigar.parse(cigar_str)
+
+
+@pytest.mark.parametrize(
+    "op, expected_error",
+    [
+        ("Z", ex.InvalidOperationError),  # Unknown CIGAR operation
+        ("10X", ex.InvalidOperationError),  # Erroneous operation within the string
+        ("1H2Z3M", ex.InvalidOperationError),  # Included valid operations, but Z is invalid
+        (42, ex.InvalidOperationError),  # Integer not representing a valid `CigarActions`
+    ]
+)
+def test_invalid_cigar_operation(op, expected_error):
+    with pytest.raises(expected_error):
+        Cigar.parse_operation(op)
+
+
+@pytest.mark.parametrize(
+    "cigar, r_st, r_ei, q_st, q_ei, expected_error",
+    [
+        ("4M", 0, 3, 0, 2, ex.CigarHitRangeError),  # CIGAR string maps more positions than provided by query end
+        ("4M", 0, 4, 0, 3, ex.CigarHitRangeError),  # CIGAR string maps more positions than reference end suggests
+    ]
+)
+def test_cigar_hit_range_error(cigar, r_st, r_ei, q_st, q_ei, expected_error):
+    with pytest.raises(expected_error):
+        CigarHit(Cigar.coerce(cigar), r_st, r_ei, q_st, q_ei)
+
+
+@pytest.mark.parametrize(
+    "hit_a, hit_b, expected_error",
+    [
+        ("4M@1->1", "5M@2->3", ex.CigarConnectError),  # Overlapping hits
+        ("5M@2->3", "4M@1->1", ex.CigarConnectError),  # Overlapping hits
+    ]
+)
+def test_cigar_hit_connection_errors(hit_a, hit_b, expected_error):
+    hit_a = parsed_hit(hit_a)
+    hit_b = parsed_hit(hit_b)
+    with pytest.raises(expected_error):
+        hit_a.connect(hit_b)
+
+
+@pytest.mark.parametrize(
+    "hit_a, hit_b, expected_error",
+    [
+        ("4M@1->1", "5M@2->3", ex.CigarConnectError),  # Overlapping hits
+        ("5M@2->3", "4M@1->1", ex.CigarConnectError),  # Overlapping hits
+        ("4M@1->1", "5M@9->9", ex.CigarConnectError),  # Non touching hits
+    ]
+)
+def test_cigar_hit_add_errors(hit_a, hit_b, expected_error):
+    hit_a = parsed_hit(hit_a)
+    hit_b = parsed_hit(hit_b)
+    with pytest.raises(expected_error):
+        hit_a + hit_b
