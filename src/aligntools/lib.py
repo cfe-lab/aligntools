@@ -5,7 +5,7 @@ Module for handling CIGAR strings and related alignment formats.
 from enum import IntEnum
 from math import ceil, floor
 import re
-from typing import Tuple, Iterable, Optional, Set, List, Union
+from typing import Tuple, Iterable, Optional, Set, List, Union, Dict
 from dataclasses import dataclass
 from functools import cached_property, reduce
 from fractions import Fraction
@@ -13,7 +13,7 @@ from fractions import Fraction
 import aligntools.libexceptions as ex
 
 
-class IntDict(dict[int, int]):
+class IntDict(Dict[int, int]):
     """
     An extension of the basic Python dictionary designed for integer-to-integer mappings.
 
