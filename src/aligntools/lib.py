@@ -490,6 +490,11 @@ class Cigar:
         return ''.join('{}{}'.format(num, Cigar.operation_to_str(op)) for num, op in self._data)
 
 
+def intervals_overlap(x: Tuple[int, int], y: Tuple[int, int]) -> bool:
+    """ Check if two intervals [x0, x1] and [y0, y1] overlap. """
+    return x[0] <= y[1] and x[1] >= y[0]
+
+
 @dataclass(frozen=True)
 class CigarHit:
     """
@@ -543,19 +548,19 @@ class CigarHit:
 
         return CigarHit(cigar, r_st=r_st, r_ei=r_ei, q_st=q_st, q_ei=q_ei)
 
-    def overlaps(self, other: 'CigarHit') -> bool:
+    def overlaps_in_query(self, other: 'CigarHit') -> bool:
         """
-        Determines whether this CigarHit overlaps with another in terms of reference or query coordinates.
-        Two hits are considered overlapping if their alignment ranges on the reference or query sequence overlap.
-        Note: Assumes that both CigarHit instances pertain to the same pair of reference and query sequences.
+        Determines whether this CigarHit overlaps with another in terms of query coordinates.
         """
 
-        def intervals_overlap(x: Tuple[int, int], y: Tuple[int, int]) -> bool:
-            """ Check if two intervals [x0, x1] and [y0, y1] overlap. """
-            return x[0] <= y[1] and x[1] >= y[0]
+        return intervals_overlap((self.q_st, self.q_ei), (other.q_st, other.q_ei))
 
-        return intervals_overlap((self.r_st, self.r_ei), (other.r_st, other.r_ei)) \
-            or intervals_overlap((self.q_st, self.q_ei), (other.q_st, other.q_ei))
+    def overlaps_in_reference(self, other: 'CigarHit') -> bool:
+        """
+        Determines whether this CigarHit overlaps with another in terms of reference coordinates.
+        """
+
+        return intervals_overlap((self.r_st, self.r_ei), (other.r_st, other.r_ei))
 
     def touches(self, other: 'CigarHit') -> bool:
         """
@@ -630,7 +635,7 @@ class CigarHit:
         then adjusts boundaries appropriately.
         """
 
-        if self.overlaps(other):
+        if self.overlaps_in_query(other) or self.overlaps_in_reference(other):
             raise ex.CigarConnectError("Cannot combine overlapping CIGAR hits")
 
         filler = CigarHit.from_default_alignment(self.r_ei + 1, other.r_st - 1, self.q_ei + 1, other.q_st - 1)
@@ -777,7 +782,7 @@ def connect_cigar_hits(cigar_hits: List[CigarHit]) -> List[CigarHit]:
     # Collect non-overlapping parts.
     # Earlier matches have priority over ones that come after.
     for hit in cigar_hits:
-        if any(earlier.overlaps(hit) for earlier in accumulator):
+        if any((earlier.overlaps_in_query(hit) or earlier.overlaps_in_reference(hit)) for earlier in accumulator):
             continue
 
         accumulator.append(hit)
