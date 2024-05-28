@@ -776,7 +776,7 @@ def connect_cigar_hits(cigar_hits: List[CigarHit]) -> List[CigarHit]:
     For those cases we simply connect all the parts that do not overlap.
 
     Order of cigar_hits matters because we ignore alignments
-    that overlap with previously found alignments.
+    that overlap (in query space) with previously found alignments.
     """
 
     if len(cigar_hits) == 0:
@@ -787,7 +787,7 @@ def connect_cigar_hits(cigar_hits: List[CigarHit]) -> List[CigarHit]:
     # Collect non-overlapping parts.
     # Earlier matches have priority over ones that come after.
     for hit in cigar_hits:
-        if any((earlier.overlaps_in_query(hit) or earlier.overlaps_in_reference(hit)) for earlier in accumulator):
+        if any(earlier.overlaps_in_query(hit) for earlier in accumulator):
             continue
 
         accumulator.append(hit)
@@ -800,7 +800,8 @@ def connect_cigar_hits(cigar_hits: List[CigarHit]) -> List[CigarHit]:
 
     def find_group(phit: CigarHit) -> None:
         for group in sorted_groups:
-            if phit.q_st > group[-1].q_st:
+            if phit.q_st > group[-1].q_ei and \
+               all(not phit.overlaps_in_reference(other) for other in group):
                 group.append(phit)
                 return
 

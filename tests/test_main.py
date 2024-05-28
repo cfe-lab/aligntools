@@ -759,7 +759,7 @@ connect_cigar_hits_cases = [
     # Hits that overlap by a single base should prioritize the first hit and not combine
     (["3M@1->1", "3M@3->3"], ["3M@1->1"]),
     # Non-overlapping hits in the query space but overlapping in reference space
-    (["5M@1->1", "1M@10->3"], ["5M@1->1"]),
+    (["5M@1->1", "1M@10->3"], ['5M@1->1', '1M@10->3']),
     # Combining more than two hits
     (["3M@1->1", "3M@7->7", "3M@16->12"], ["3M3D3I3M2D6I3M@1->1"]),
     # Combining hits including hard-clipping, which should be ignored in alignments
