@@ -562,14 +562,19 @@ class CigarHit:
 
         return intervals_overlap((self.r_st, self.r_ei), (other.r_st, other.r_ei))
 
-    def touches(self, other: 'CigarHit') -> bool:
+    def touches_in_query(self, other: 'CigarHit') -> bool:
         """
         Checks if the end of this CigarHit is immediately adjacent to the start of another one.
-        Note: Assumes that both CigarHit instances pertain to the same pair of reference and query sequences.
         """
 
-        return self.r_ei + 1 == other.r_st \
-            and self.q_ei + 1 == other.q_st
+        return self.q_ei + 1 == other.q_st
+
+    def touches_in_reference(self, other: 'CigarHit') -> bool:
+        """
+        Checks if the end of this CigarHit is immediately adjacent to the start of another one.
+        """
+
+        return self.r_ei + 1 == other.r_st
 
     def _gaps(self, is_deletions: bool) -> Iterable['CigarHit']:
         last_query_index = self.q_st
@@ -619,7 +624,7 @@ class CigarHit:
         The addition is simply a concatenation of two Cigar strings, and adjustment of hit coordinates.
         """
 
-        if not self.touches(other):
+        if not (self.touches_in_query(other) and self.touches_in_reference(other)):
             raise ex.CigarConnectError("Cannot combine CIGAR hits that do not touch "
                                        "in both reference and query coordinates")
 

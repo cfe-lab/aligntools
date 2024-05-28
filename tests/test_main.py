@@ -434,7 +434,7 @@ def test_cigar_hit_reference_strip_combines_with_add(hit):
         left = left.rstrip_query()
         right = right.lstrip_query()
 
-        if left.touches(right):
+        if left.touches_in_query(right) and left.touches_in_reference(right):
             assert left + right == hit
 
 
@@ -518,7 +518,7 @@ def test_cigar_hit_query_strip_combines_with_add(hit):
         left = left.rstrip_reference()
         right = right.lstrip_reference()
 
-        if left.touches(right):
+        if left.touches_in_query(right) and left.touches_in_reference(right):
             assert left + right == hit
 
 
