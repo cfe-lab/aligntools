@@ -54,3 +54,17 @@ jobs:
 
       - name: Run typechecker
         run: mypy
+
+  other_static_analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y python3 python3-pip
+
+      - name: Run build
+        run: pip3 install .[dev]
+
+      - name: Run bandit
+        run: bandit -r . -x "./tests"
