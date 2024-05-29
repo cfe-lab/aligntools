@@ -407,7 +407,7 @@ class Cigar:
         if operation in Cigar.OP_MAPPING:
             return Cigar.OP_MAPPING[operation]
         else:
-            raise ex.InvalidOperationError(f"Unexpected CIGAR action: {operation}.")
+            raise ex.InvalidOperationError(f"Unexpected CIGAR action: {operation!r}.")
 
     @staticmethod
     def operation_to_str(op: CigarActions) -> str:
@@ -430,7 +430,7 @@ class Cigar:
                 data.append((int(num), Cigar.parse_operation(operation)))
                 string = string[match.end():]
             else:
-                raise ex.ParseError(f"Invalid CIGAR string. Invalid part: {string[:20]}")
+                raise ex.ParseError(f"Invalid CIGAR string. Invalid part: {string[:20]!r}.")
 
         return Cigar(data)
 
@@ -520,11 +520,11 @@ class CigarHit:
     def __post_init__(self):
         if self.ref_length != self.cigar.ref_length:
             raise ex.CigarHitRangeError(f"CIGAR string maps {self.cigar.ref_length}"
-                                        f" reference positions, but CIGAR hit range is {self.ref_length}")
+                                        f" reference positions, but CIGAR hit range is {self.ref_length}.")
 
         if self.query_length != self.cigar.query_length:
             raise ex.CigarHitRangeError(f"CIGAR string maps {self.cigar.query_length}"
-                                        f" query positions, but CIGAR hit range is {self.query_length}")
+                                        f" query positions, but CIGAR hit range is {self.query_length}.")
 
     @property
     def ref_length(self):
@@ -626,7 +626,7 @@ class CigarHit:
 
         if not (self.touches_in_query(other) and self.touches_in_reference(other)):
             raise ex.CigarConnectError("Cannot combine CIGAR hits that do not touch "
-                                       "in both reference and query coordinates")
+                                       "in both reference and query coordinates.")
 
         return CigarHit(cigar=self.cigar + other.cigar,
                         r_st=self.r_st,
@@ -641,7 +641,7 @@ class CigarHit:
         """
 
         if self.overlaps_in_query(other) or self.overlaps_in_reference(other):
-            raise ex.CigarConnectError("Cannot combine overlapping CIGAR hits")
+            raise ex.CigarConnectError("Cannot combine overlapping CIGAR hits.")
 
         filler = CigarHit.from_default_alignment(self.r_ei + 1, other.r_st - 1, self.q_ei + 1, other.q_st - 1)
         return self + filler + other
@@ -694,11 +694,11 @@ class CigarHit:
 
         fcut_point: Fraction = Fraction(cut_point)
         if fcut_point.denominator == 1:
-            raise ex.CigarCutError("Cut accepts fractions, not integers")
+            raise ex.CigarCutError("Cut accepts fractions, not integers.")
 
         if self.ref_length == 0 or \
            not (self.r_st - 1 < fcut_point < self.r_ei + 1):
-            raise ex.CigarCutError("Cut point out of reference bounds")
+            raise ex.CigarCutError("Cut point out of reference bounds.")
 
         op_fcut_point = self._ref_cut_to_op_cut(fcut_point)
         left = self._slice(self.r_st, self.q_st, 0, floor(op_fcut_point))
@@ -780,7 +780,7 @@ def connect_cigar_hits(cigar_hits: List[CigarHit]) -> List[CigarHit]:
     """
 
     if len(cigar_hits) == 0:
-        raise ex.EmptyCigarHitListError("Expected a non-empty list of cigar hits")
+        raise ex.EmptyCigarHitListError("Expected a non-empty list of cigar hits.")
 
     accumulator: List[CigarHit] = []
 
