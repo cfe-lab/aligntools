@@ -38,7 +38,7 @@ markers = [
 ]
 
 [tool.mypy]
-files = ["src"]
+files = ["src", "tests"]
 ignore_missing_imports = true
 strict_optional = true
 allow_untyped_calls = false

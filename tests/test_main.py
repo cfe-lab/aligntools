@@ -1,8 +1,9 @@
 import pytest
 from math import floor
 import re
+from typing import Dict, Union
 
-from aligntools import Cigar, CigarHit, connect_cigar_hits, CigarActions
+from aligntools import Cigar, CigarHit, connect_cigar_hits, CigarActions, IntDict
 import aligntools.libexceptions as ex
 
 
@@ -82,7 +83,8 @@ def test_cigar_to_coordinate_mapping(cigar_str, expected_mapping):
 
 @pytest.mark.parametrize("cigar_str", [x[0] for x in cigar_mapping_cases])
 def test_cigar_to_coordinate_bijection_property(cigar_str):
-    def inverse(d): return {v: k for k, v in d.items()}
+    def inverse(d: Union[IntDict, Dict[object, object]]) -> Dict[object, object]:
+        return {v: k for k, v in d.items()}
 
     mapping = Cigar.coerce(cigar_str).coordinate_mapping
 
@@ -159,7 +161,8 @@ def test_invalid_operation_in_cigar_string():
 
 def test_invalid_operation_in_cigar_list():
     with pytest.raises(ValueError):
-        Cigar.coerce([(3, 42)])  # Operation code "42" does not exist
+        # Operation code "42" does not exist
+        Cigar.coerce([(3, 42)])  # type: ignore
 
 
 def test_invalid_cigar_string():
@@ -172,7 +175,7 @@ def test_invalid_cigar_string():
 CIGAR_REGEX = re.compile(r"(.*)@([0-9]+)->([0-9]+)")
 
 
-def parsed_hit(string):
+def parsed_hit(string: str) -> CigarHit:
     match = CIGAR_REGEX.match(string)
     assert match, f"Cannot parse {string}"
     cigar_str, q_st, r_st = match.groups()
