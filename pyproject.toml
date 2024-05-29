@@ -24,6 +24,7 @@ dev = [
     # Dependencies required for development (linting, type checking, etc.)
     "flake8",
     "mypy==1.9.0",
+    "bandit",
 ]
 
 [tool.hatch.build.targets.sdist]
