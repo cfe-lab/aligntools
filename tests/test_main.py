@@ -3,14 +3,19 @@ from math import floor
 import re
 from typing import Dict, Union
 
-from aligntools import Cigar, CigarHit, connect_cigar_hits, CigarActions, IntDict
+from aligntools import Cigar, CigarHit, \
+    connect_cigar_hits, CigarActions, IntDict
 import aligntools.libexceptions as ex
 
 
 cigar_mapping_cases = [
     # Simple cases
-    ("3M", {0: 0, 1: 1, 2: 2}, {0: 0, 1: 1, 2: 2}),  # exact mapping  # closest mapping
-    ("1M1D1M", {0: 0, 2: 1}, {0: 0, 1: 0, 2: 1}),  # exact mapping  # closest mapping
+
+    #      v exact mapping v   v closest mapping v
+    ("3M", {0: 0, 1: 1, 2: 2}, {0: 0, 1: 1,  2: 2}),
+
+    #          v exact mapping v     v closest mapping v
+    ("1M1D1M", {0: 0,     2: 1},     {0: 0, 1: 0,  2: 1}),
     ("1M1I1M", {0: 0, 1: 2}, {0: 0, 1: 2}),
     ("2M2D2M", {0: 0, 1: 1, 4: 2, 5: 3}, {0: 0, 1: 1, 2: 1, 3: 1, 4: 2, 5: 3}),
     ("2M2I2M", {0: 0, 1: 1, 2: 4, 3: 5}, {0: 0, 1: 1, 2: 4, 3: 5}),
@@ -83,7 +88,8 @@ def test_cigar_to_coordinate_mapping(cigar_str, expected_mapping):
 
 @pytest.mark.parametrize("cigar_str", [x[0] for x in cigar_mapping_cases])
 def test_cigar_to_coordinate_bijection_property(cigar_str):
-    def inverse(d: Union[IntDict, Dict[object, object]]) -> Dict[object, object]:
+    def inverse(d: Union[IntDict, Dict[object, object]]) \
+            -> Dict[object, object]:
         return {v: k for k, v in d.items()}
 
     mapping = Cigar.coerce(cigar_str).coordinate_mapping
@@ -95,13 +101,16 @@ def test_cigar_to_coordinate_bijection_property(cigar_str):
 
 
 @pytest.mark.parametrize(
-    "cigar_str, expected_leftmax_mapping", [(x[0], x[2]) for x in cigar_mapping_cases]
+    "cigar_str, expected_leftmax_mapping", [(x[0], x[2])
+                                            for x in cigar_mapping_cases]
 )
-def test_cigar_to_coordinate_mapping_leftmax(cigar_str, expected_leftmax_mapping):
+def test_cigar_to_coordinate_mapping_leftmax(cigar_str,
+                                             expected_leftmax_mapping):
     mapping = Cigar.coerce(cigar_str).coordinate_mapping
 
     fullrange = {
-        i: mapping.ref_to_query.left_max(i) for i in mapping.ref_to_query.domain
+        i: mapping.ref_to_query.left_max(i)
+        for i in mapping.ref_to_query.domain
     }
     assert expected_leftmax_mapping == fullrange
 
@@ -132,9 +141,11 @@ def test_cigar_hit_to_coordinate_mapping(cigar_str, expected_mapping):
 
 
 @pytest.mark.parametrize(
-    "cigar_str, expected_leftmax_mapping", [(x[0], x[2]) for x in cigar_mapping_cases]
+    "cigar_str, expected_leftmax_mapping",
+    [(x[0], x[2]) for x in cigar_mapping_cases]
 )
-def test_cigar_hit_to_coordinate_mapping_leftmax(cigar_str, expected_leftmax_mapping):
+def test_cigar_hit_to_coordinate_mapping_leftmax(cigar_str,
+                                                 expected_leftmax_mapping):
     cigar = Cigar.coerce(cigar_str)
     hit = CigarHit(
         cigar,
@@ -149,7 +160,8 @@ def test_cigar_hit_to_coordinate_mapping_leftmax(cigar_str, expected_leftmax_map
         for (k, v) in expected_leftmax_mapping.items()
     }
     fullrange = {
-        i: mapping.ref_to_query.left_max(i) for i in mapping.ref_to_query.domain
+        i: mapping.ref_to_query.left_max(i)
+        for i in mapping.ref_to_query.domain
     }
     assert expected == fullrange
 
@@ -208,8 +220,10 @@ cigar_hit_ref_cut_cases = [
     ("9M9I9M@1->1", 9.2, ["9M1I@1->1", "8I9M@11->10"]),
     ("9M9D9I9M@1->1", 13.5 or 27 / 2, ["9M4D@1->1", "5D9I9M@10->14"]),
     ("9M9I9D9M@1->1", 13.5 or 27 / 2, ["9M9I4D@1->1", "5D9M@19->14"]),
-    ("9M9D9I9D9I9D9M@1->1", 13.5 or 27 / 2, ["9M4D@1->1", "5D9I9D9I9D9M@10->14"]),
-    ("9M9I9D9I9D9I9M@1->1", 13.5 or 27 / 2, ["9M9I4D@1->1", "5D9I9D9I9M@19->14"]),
+    ("9M9D9I9D9I9D9M@1->1", 13.5 or 27 / 2,
+     ["9M4D@1->1", "5D9I9D9I9D9M@10->14"]),
+    ("9M9I9D9I9D9I9M@1->1", 13.5 or 27 / 2,
+     ["9M9I4D@1->1", "5D9I9D9I9M@19->14"]),
     (
         "1M1I1D1M@1->1",
         1.5,  # same as previous 2 cases but smaller
@@ -255,7 +269,8 @@ cigar_hit_ref_cut_cases = [
 ]
 
 
-@pytest.mark.parametrize("hit, cut_point, expected_result", cigar_hit_ref_cut_cases)
+@pytest.mark.parametrize("hit, cut_point, expected_result",
+                         cigar_hit_ref_cut_cases)
 def test_cigar_hit_ref_cut(hit, cut_point, expected_result):
     hit = parsed_hit(hit)
 
@@ -274,7 +289,8 @@ def test_cigar_hit_ref_cut(hit, cut_point, expected_result):
 
 @pytest.mark.parametrize(
     "hit, cut_point",
-    [(x[0], x[1]) for x in cigar_hit_ref_cut_cases if not isinstance(x[2], Exception)],
+    [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
+     if not isinstance(x[2], Exception)],
 )
 def test_cigar_hit_ref_cut_add_prop(hit, cut_point):
     hit = parsed_hit(hit)
@@ -286,7 +302,8 @@ def test_cigar_hit_ref_cut_add_prop(hit, cut_point):
     "hit, cut_point",
     [
         (x[0], x[1])
-        for x in [x for x in cigar_hit_ref_cut_cases if not isinstance(x[2], Exception)]
+        for x in [x for x in cigar_hit_ref_cut_cases
+                  if not isinstance(x[2], Exception)]
     ],
 )
 def test_cigar_hit_ref_cut_add_prop_exhaustive(hit, cut_point):
@@ -473,12 +490,11 @@ def test_cigar_hit_reference_strips_are_commutative(hit):
     hit = parsed_hit(hit)
 
     if len(hit.cigar.coordinate_mapping.ref_to_query) > 0:
-        assert hit.rstrip_query().lstrip_query() == hit.lstrip_query().rstrip_query()
+        assert hit.rstrip_query().lstrip_query() \
+            == hit.lstrip_query().rstrip_query()
     else:
-        assert (
-            hit.rstrip_query().lstrip_query().cigar
+        assert hit.rstrip_query().lstrip_query().cigar \
             == hit.lstrip_query().rstrip_query().cigar
-        )
 
 
 @pytest.mark.parametrize("hit, expected", lstrip_reference_cases)
@@ -540,13 +556,19 @@ def test_cigar_hit_query_strip_is_idempotent(hit):
     hit = parsed_hit(hit)
 
     h1 = hit.rstrip_reference()
-    assert h1 == h1.rstrip_reference() == h1.rstrip_reference().rstrip_reference()
+    assert h1 \
+        == h1.rstrip_reference() \
+        == h1.rstrip_reference().rstrip_reference()
 
     h1 = hit.lstrip_reference()
-    assert h1 == h1.lstrip_reference() == h1.lstrip_reference().lstrip_reference()
+    assert h1 \
+        == h1.lstrip_reference() \
+        == h1.lstrip_reference().lstrip_reference()
 
     h1 = hit.lstrip_reference().rstrip_reference()
-    assert h1 == h1.lstrip_reference() == h1.rstrip_reference()
+    assert h1 \
+        == h1.lstrip_reference() \
+        == h1.rstrip_reference()
 
     h1 = hit.rstrip_reference().lstrip_reference()
     assert h1 == h1.rstrip_reference() == h1.lstrip_reference()
@@ -570,7 +592,8 @@ def test_cigar_hit_query_strips_are_commutative(hit):
 
 @pytest.mark.parametrize(
     "hit, cut_point",
-    [(x[0], x[1]) for x in cigar_hit_ref_cut_cases if not isinstance(x[2], Exception)],
+    [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
+     if not isinstance(x[2], Exception)],
 )
 def test_cigar_hit_ref_cut_add_associativity(hit, cut_point):
     hit = parsed_hit(hit)
@@ -589,7 +612,8 @@ def test_cigar_hit_ref_cut_add_associativity(hit, cut_point):
 
 
 @pytest.mark.parametrize(
-    "hit", [x[0] for x in cigar_hit_ref_cut_cases if not isinstance(x[2], Exception)]
+    "hit", [x[0] for x in cigar_hit_ref_cut_cases
+            if not isinstance(x[2], Exception)]
 )
 def test_cigar_hit_deletions_no_m_or_i(hit):
     hit = parsed_hit(hit)
@@ -603,7 +627,8 @@ def test_cigar_hit_deletions_no_m_or_i(hit):
 
 
 @pytest.mark.parametrize(
-    "hit", [x[0] for x in cigar_hit_ref_cut_cases if not isinstance(x[2], Exception)]
+    "hit", [x[0] for x in cigar_hit_ref_cut_cases
+            if not isinstance(x[2], Exception)]
 )
 def test_cigar_hit_deletions_lengths(hit):
     hit = parsed_hit(hit)
@@ -616,7 +641,8 @@ def test_cigar_hit_deletions_lengths(hit):
 
 
 @pytest.mark.parametrize(
-    "hit", [x[0] for x in cigar_hit_ref_cut_cases if not isinstance(x[2], Exception)]
+    "hit", [x[0] for x in cigar_hit_ref_cut_cases
+            if not isinstance(x[2], Exception)]
 )
 def test_cigar_hit_insertions_no_m_or_i(hit):
     hit = parsed_hit(hit)
@@ -631,7 +657,8 @@ def test_cigar_hit_insertions_no_m_or_i(hit):
 
 
 @pytest.mark.parametrize(
-    "hit", [x[0] for x in cigar_hit_ref_cut_cases if not isinstance(x[2], Exception)]
+    "hit", [x[0] for x in cigar_hit_ref_cut_cases
+            if not isinstance(x[2], Exception)]
 )
 def test_cigar_hit_insertions_lengths(hit):
     hit = parsed_hit(hit)
@@ -729,7 +756,7 @@ def test_illigal_cigar_to_msa(cigar, reference_seq, query_seq):
 )
 def test_from_msa(reference, query, expected_cigar_str):
     cigar = Cigar.from_msa(reference, query)
-    assert str(cigar) == expected_cigar_str, f"Expected {expected_cigar_str}, got {str(cigar)}"
+    assert str(cigar) == expected_cigar_str
 
 
 @pytest.mark.parametrize(
@@ -742,7 +769,8 @@ def test_from_msa(reference, query, expected_cigar_str):
     ]
 )
 def test_invalid_from_msa_due_to_length_mismatch(reference, query):
-    with pytest.raises(ValueError, match="Reference and query sequences must be of the same length."):
+    msg = "Reference and query sequences must be of the same length."
+    with pytest.raises(ValueError, match=msg):
         Cigar.from_msa(reference, query)
 
 
@@ -759,13 +787,16 @@ connect_cigar_hits_cases = [
     (["8M@1->1", "3M@3->3"], ["8M@1->1"]),
     # Hits that are out of order should be connected if no overlap
     (["3M@6->10", "3M@1->1"], ["3M6D2I3M@1->1"]),
-    # Hits that overlap by a single base should prioritize the first hit and not combine
+    # Hits that overlap by a single base should prioritize
+    # the first hit and not combine
     (["3M@1->1", "3M@3->3"], ["3M@1->1"]),
-    # Non-overlapping hits in the query space but overlapping in reference space
+    # Non-overlapping hits in the query space
+    # but overlapping in reference space
     (["5M@1->1", "1M@10->3"], ['5M@1->1', '1M@10->3']),
     # Combining more than two hits
     (["3M@1->1", "3M@7->7", "3M@16->12"], ["3M3D3I3M2D6I3M@1->1"]),
-    # Combining hits including hard-clipping, which should be ignored in alignments
+    # Combining hits including hard-clipping,
+    # which should be ignored in alignments
     (["2H5M1H@3->1", "2H5M1H@13->11"], ["2H5M1H5D5I2H5M1H@3->1"]),
     # An empty list of hits should raise a ValueError
     ([], ex.EmptyCigarHitListError("Expected a non-empty list of cigar hits")),
@@ -793,7 +824,9 @@ def test_connect_cigar_hits(hits, expected_result):
         (123, ex.CoersionError),  # Integer
         ({}, ex.CoersionError),  # Dictionary
         (None, ex.CoersionError),  # None
-        (("2M", CigarActions.MATCH), ex.InvalidOperationError),  # Tuple that is not a valid Cigar or string
+
+        # Tuple that is not a valid Cigar or string
+        (("2M", CigarActions.MATCH), ex.InvalidOperationError),
         ([(2, CigarActions.MATCH, 3, 4, 5)], ex.InvalidOperationError),
         ([("not a number", CigarActions.MATCH)], ex.InvalidOperationError),
         ([(-42, CigarActions.MATCH)], ex.InvalidOperationError),
@@ -810,7 +843,9 @@ def test_invalid_cigar_coercion(obj, expected_error):
         ("10Z", ex.InvalidOperationError),  # Unknown operation 'Z'
         ("abc", ex.ParseError),  # Non-numeric prefix
         ("10", ex.ParseError),  # Missing operation code
-        ("M10", ex.ParseError),  # Invalid syntax; number should precede operation
+
+        # Invalid syntax; number should precede operation
+        ("M10", ex.ParseError),
         ("1-0M", ex.InvalidOperationError),  # Invalid number
     ]
 )
@@ -822,10 +857,17 @@ def test_invalid_cigar_string_parsing(cigar_str, expected_error):
 @pytest.mark.parametrize(
     "op, expected_error",
     [
-        ("Z", ex.InvalidOperationError),  # Unknown CIGAR operation
-        ("10X", ex.InvalidOperationError),  # Erroneous operation within the string
-        ("1H2Z3M", ex.InvalidOperationError),  # Included valid operations, but Z is invalid
-        (42, ex.InvalidOperationError),  # Integer not representing a valid `CigarActions`
+        # Unknown CIGAR operation
+        ("Z", ex.InvalidOperationError),
+
+        # Erroneous operation within the string
+        ("10X", ex.InvalidOperationError),
+
+        # Included valid operations, but Z is invalid
+        ("1H2Z3M", ex.InvalidOperationError),
+
+        # Integer not representing a valid `CigarActions`
+        (42, ex.InvalidOperationError),
     ]
 )
 def test_invalid_cigar_operation(op, expected_error):
@@ -836,8 +878,11 @@ def test_invalid_cigar_operation(op, expected_error):
 @pytest.mark.parametrize(
     "cigar, r_st, r_ei, q_st, q_ei, expected_error",
     [
-        ("4M", 0, 3, 0, 2, ex.CigarHitRangeError),  # CIGAR string maps more positions than provided by query end
-        ("4M", 0, 4, 0, 3, ex.CigarHitRangeError),  # CIGAR string maps more positions than reference end suggests
+        # CIGAR string maps more positions than provided by query end
+        ("4M", 0, 3, 0, 2, ex.CigarHitRangeError),
+
+        # CIGAR string maps more positions than reference end suggests
+        ("4M", 0, 4, 0, 3, ex.CigarHitRangeError),
     ]
 )
 def test_cigar_hit_range_error(cigar, r_st, r_ei, q_st, q_ei, expected_error):

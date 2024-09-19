@@ -21,7 +21,10 @@ class InvalidOperationError(ValueError, CigarError):
 
 
 class CigarHitRangeError(ValueError, CigarError):
-    """Exception raised when a CIGAR hit range does not match with its coordinates."""
+    """
+    Exception raised when a CIGAR hit range
+    does not match with its coordinates.
+    """
     pass
 
 
@@ -31,10 +34,16 @@ class CigarConnectError(ValueError, CigarError):
 
 
 class CigarCutError(IndexError, CigarError):
-    """Exception raised for errors in cutting CIGAR strings at reference points."""
+    """
+    Exception raised for errors in cutting CIGAR
+    strings at reference points.
+    """
     pass
 
 
 class EmptyCigarHitListError(ValueError, CigarError):
-    """Exception raised when an empty list of CIGAR hits is given for processing."""
+    """
+    Exception raised when an empty list of CIGAR hits
+    is given for processing.
+    """
     pass

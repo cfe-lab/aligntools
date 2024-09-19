@@ -6,10 +6,13 @@ from aligntools.int_dict import IntDict
 
 class CoordinateMapping:
     """
-    Manages bidirectional mappings between reference and query coordinates, as well as operation indices.
+    Manages bidirectional mappings between reference and query
+    coordinates, as well as operation indices.
 
-    The mapping enables conversion from reference to query coordinates and vice versa. It also manages the
-    association of these coordinates with their respective operations in the alignment process.
+    The mapping enables conversion from reference to query coordinates
+    and vice versa. It also manages the association of these
+    coordinates with their respective operations in the alignment
+    process.
     """
 
     def __init__(self) -> None:
@@ -28,20 +31,25 @@ class CoordinateMapping:
         self.ref_to_op.extend(ref_index, op_index)
         self.query_to_op.extend(query_index, op_index)
 
-    def translate(self, reference_delta: int, query_delta: int) -> 'CoordinateMapping':
+    def translate(self, reference_delta: int, query_delta: int) \
+            -> 'CoordinateMapping':
         """
-        Generate a new CoordinateMapping with shifted coordinate spaces.
+        Generate a new CoordinateMapping with shifted coordinate
+        spaces.
 
-        This method creates a new mapping where each original coordinate in
-        the reference and query sequences is shifted. This allows for adapting
-        the CoordinateMapping to account for changes or offsets in sequence positions,
-        such as when sequences are trimmed or extended.
+        This method creates a new mapping where each original
+        coordinate in the reference and query sequences is
+        shifted. This allows for adapting the CoordinateMapping to
+        account for changes or offsets in sequence positions, such as
+        when sequences are trimmed or extended.
         """
 
         ret = CoordinateMapping()
 
-        ret.ref_to_query = self.ref_to_query.translate(reference_delta, query_delta)
-        ret.query_to_ref = self.query_to_ref.translate(query_delta, reference_delta)
+        ret.ref_to_query = self.ref_to_query.translate(
+            reference_delta, query_delta)
+        ret.query_to_ref = self.query_to_ref.translate(
+            query_delta, reference_delta)
         ret.ref_to_op = self.ref_to_op.translate(reference_delta, 0)
         ret.query_to_op = self.query_to_op.translate(query_delta, 0)
 

@@ -4,12 +4,15 @@ from typing import Optional, AbstractSet, Mapping, Dict, Iterator, MutableSet
 
 class IntDict(Mapping[int, int]):
     """
-    An extension of the basic Python dictionary designed for integer-to-integer mappings.
+    An extension of the basic Python dictionary designed for
+    integer-to-integer mappings.
 
-    The IntDict maintains not just key-value pairs (as in a normal dictionary) but also
-    tracks additional sets called `domain` and `codomain`. These sets are supersets
-    of the keys and values respectively, as they include integers that might not be used
-    directly in mappings but are within the range of interest for the domain and codomain.
+    The IntDict maintains not just key-value pairs (as in a normal
+    dictionary) but also tracks additional sets called `domain` and
+    `codomain`. These sets are supersets of the keys and values
+    respectively, as they include integers that might not be used
+    directly in mappings but are within the range of interest for the
+    domain and codomain.
     """
 
     def __init__(self) -> None:
@@ -35,10 +38,11 @@ class IntDict(Mapping[int, int]):
 
     def translate(self, domain_delta: int, codomain_delta: int) -> 'IntDict':
         """
-        Generates a new IntDict by shifting the entire mapping -- keys and values
-        are incremented by domain_delta and codomain_delta, respectively.
-        This shift operation preserves the inherent ordering and relative spacing within the mapping,
-        effectively repositioning the dataset within the integer space.
+        Generates a new IntDict by shifting the entire mapping -- keys
+        and values are incremented by domain_delta and codomain_delta,
+        respectively.  This shift operation preserves the inherent
+        ordering and relative spacing within the mapping, effectively
+        repositioning the dataset within the integer space.
         """
 
         ret = IntDict()
