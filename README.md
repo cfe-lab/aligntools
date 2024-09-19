@@ -205,11 +205,11 @@ To make changes to `aligntools`:
 git clone https://github.com/${YOUR_USERNAME}/aligntools
 cd aligntools
 pip install .[dev,test] # Install all development, and test dependencies.
-git checkout -b $MY_CHANGE_NAME
+git checkout -b $YOUR_CHANGE_NAME
 ```
 
 - Editing some files & commiting the results.
-- Running the validation validation, like this:
+- Running the validation, like this:
 
 ```shell
 pytest && flake8 && bandit
