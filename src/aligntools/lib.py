@@ -82,9 +82,6 @@ class IntDict(Mapping[int, int]):
     def __getitem__(self, key: int) -> int:
         return self._dict[key]
 
-    def __setitem__(self, key: int) -> int:
-        return self._dict[key]
-
 
 class CoordinateMapping:
     """
