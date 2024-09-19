@@ -5,82 +5,13 @@ Module for handling CIGAR strings and related alignment formats.
 from enum import IntEnum
 from math import ceil, floor
 import re
-from typing import Tuple, Iterable, Optional, AbstractSet, List, Union, Mapping, Dict, Iterator, MutableSet
+from typing import Tuple, Iterable, Optional, List, Union
 from dataclasses import dataclass
 from functools import cached_property, reduce
 from fractions import Fraction
 
+from aligntools.int_dict import IntDict
 import aligntools.libexceptions as ex
-
-
-class IntDict(Mapping[int, int]):
-    """
-    An extension of the basic Python dictionary designed for integer-to-integer mappings.
-
-    The IntDict maintains not just key-value pairs (as in a normal dictionary) but also
-    tracks additional sets called `domain` and `codomain`. These sets are supersets
-    of the keys and values respectively, as they include integers that might not be used
-    directly in mappings but are within the range of interest for the domain and codomain.
-    """
-
-    def __init__(self) -> None:
-        self._dict: Dict[int, int] = {}
-        self._domain: MutableSet[int] = set()   # superset of self.keys()
-        self._codomain: MutableSet[int] = set()  # superset of self.values()
-
-    def extend(self, key: Optional[int], value: Optional[int]) -> None:
-        if key is not None and value is not None:
-            self._dict[key] = value
-
-        if key is not None:
-            self._domain.add(key)
-
-        if value is not None:
-            self._codomain.add(value)
-
-    def left_max(self, index: int) -> Optional[int]:
-        return max((v for (k, v) in self.items() if k <= index), default=None)
-
-    def right_min(self, index: int) -> Optional[int]:
-        return min((v for (k, v) in self.items() if k >= index), default=None)
-
-    def translate(self, domain_delta: int, codomain_delta: int) -> 'IntDict':
-        """
-        Generates a new IntDict by shifting the entire mapping -- keys and values
-        are incremented by domain_delta and codomain_delta, respectively.
-        This shift operation preserves the inherent ordering and relative spacing within the mapping,
-        effectively repositioning the dataset within the integer space.
-        """
-
-        ret = IntDict()
-
-        for k, v in self.items():
-            ret.extend(k + domain_delta, v + codomain_delta)
-
-        for k in self.domain:
-            ret.extend(k + domain_delta, None)
-
-        for v in self.codomain:
-            ret.extend(None, v + codomain_delta)
-
-        return ret
-
-    @property
-    def domain(self) -> AbstractSet[int]:
-        return self._domain
-
-    @property
-    def codomain(self) -> AbstractSet[int]:
-        return self._codomain
-
-    def __len__(self) -> int:
-        return len(self._dict)
-
-    def __iter__(self) -> Iterator[int]:
-        return iter(self._dict)
-
-    def __getitem__(self, key: int) -> int:
-        return self._dict[key]
 
 
 class CoordinateMapping:
