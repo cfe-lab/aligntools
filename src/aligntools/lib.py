@@ -24,7 +24,6 @@ class IntDict(Mapping[int, int]):
     """
 
     def __init__(self) -> None:
-        super().__init__()
         self._dict: Dict[int, int] = {}
         self._domain: MutableSet[int] = set()   # superset of self.keys()
         self._codomain: MutableSet[int] = set()  # superset of self.values()
