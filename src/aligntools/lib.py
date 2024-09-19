@@ -5,7 +5,7 @@ Module for handling CIGAR strings and related alignment formats.
 from enum import IntEnum
 from math import ceil, floor
 import re
-from typing import Tuple, Iterable, Optional, Set, List, Union, Mapping, Dict, Iterator
+from typing import Tuple, Iterable, Optional, AbstractSet, List, Union, Mapping, Dict, Iterator, MutableSet
 from dataclasses import dataclass
 from functools import cached_property, reduce
 from fractions import Fraction
@@ -26,18 +26,18 @@ class IntDict(Mapping[int, int]):
     def __init__(self) -> None:
         super().__init__()
         self._dict: Dict[int, int] = {}
-        self.domain: Set[int] = set()   # superset of self.keys()
-        self.codomain: Set[int] = set()  # superset of self.values()
+        self._domain: MutableSet[int] = set()   # superset of self.keys()
+        self._codomain: MutableSet[int] = set()  # superset of self.values()
 
     def extend(self, key: Optional[int], value: Optional[int]) -> None:
         if key is not None and value is not None:
             self._dict[key] = value
 
         if key is not None:
-            self.domain.add(key)
+            self._domain.add(key)
 
         if value is not None:
-            self.codomain.add(value)
+            self._codomain.add(value)
 
     def left_max(self, index: int) -> Optional[int]:
         return max((v for (k, v) in self.items() if k <= index), default=None)
@@ -65,6 +65,14 @@ class IntDict(Mapping[int, int]):
             ret.extend(None, v + codomain_delta)
 
         return ret
+
+    @property
+    def domain(self) -> AbstractSet[int]:
+        return self._domain
+
+    @property
+    def codomain(self) -> AbstractSet[int]:
+        return self._codomain
 
     def __len__(self) -> int:
         return len(self._dict)
