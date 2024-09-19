@@ -5,7 +5,7 @@ Module for handling CIGAR strings and related alignment formats.
 from enum import IntEnum
 from math import ceil, floor
 import re
-from typing import Tuple, Iterable, Optional, Set, List, Union, Dict
+from typing import Tuple, Iterable, Optional, Set, List, Union, Mapping, Dict, Iterator
 from dataclasses import dataclass
 from functools import cached_property, reduce
 from fractions import Fraction
@@ -13,7 +13,7 @@ from fractions import Fraction
 import aligntools.libexceptions as ex
 
 
-class IntDict(Dict[int, int]):
+class IntDict(Mapping[int, int]):
     """
     An extension of the basic Python dictionary designed for integer-to-integer mappings.
 
@@ -25,12 +25,13 @@ class IntDict(Dict[int, int]):
 
     def __init__(self) -> None:
         super().__init__()
+        self._dict: Dict[int, int] = {}
         self.domain: Set[int] = set()   # superset of self.keys()
         self.codomain: Set[int] = set()  # superset of self.values()
 
     def extend(self, key: Optional[int], value: Optional[int]) -> None:
         if key is not None and value is not None:
-            self[key] = value
+            self._dict[key] = value
 
         if key is not None:
             self.domain.add(key)
@@ -64,6 +65,18 @@ class IntDict(Dict[int, int]):
             ret.extend(None, v + codomain_delta)
 
         return ret
+
+    def __len__(self) -> int:
+        return len(self._dict)
+
+    def __iter__(self) -> Iterator[int]:
+        return iter(self._dict)
+
+    def __getitem__(self, key: int) -> int:
+        return self._dict[key]
+
+    def __setitem__(self, key: int) -> int:
+        return self._dict[key]
 
 
 class CoordinateMapping:
