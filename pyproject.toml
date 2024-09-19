@@ -12,7 +12,22 @@ authors = [
     { name = "British Columbia Centre for Excellence in HIV/AIDS", email = "vmysak@bccfe.ca" },
 ]
 dependencies = []
-
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Software Development :: Libraries",
+    "Typing :: Typed",
+]
 
 [project.optional-dependencies]
 test = [
@@ -26,6 +41,9 @@ dev = [
     "mypy==1.9.0",
     "bandit",
 ]
+
+[project.urls]
+"Homepage" = "https://github.com/cfe-lab/aligntools"
 
 [tool.hatch.build.targets.sdist]
 include = [ "src/aligntools" ]
