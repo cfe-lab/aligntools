@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aligntools"
-version = "1.0.4"
+version = "1.0.5"
 description = "A Python library for manipulation of CIGAR, MSA, and other alignment formats."
 readme = "README.md"
 license = "GPL-3.0"
