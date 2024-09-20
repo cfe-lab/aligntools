@@ -707,8 +707,9 @@ def test_cigar_to_msa(
     ],
 )
 def test_illigal_cigar_to_msa(cigar, reference_seq, query_seq):
-    with pytest.raises(ValueError):
-        Cigar.coerce(cigar).to_msa(reference_seq, query_seq)
+    obj = Cigar.coerce(cigar)
+    with pytest.raises(ex.MSALengthError):
+        obj.to_msa(reference_seq, query_seq)
 
 
 @pytest.mark.parametrize(
@@ -917,3 +918,53 @@ def test_cigar_hit_add_errors(hit_a, hit_b, expected_error):
     hit_b = parsed_hit(hit_b)
     with pytest.raises(expected_error):
         hit_a + hit_b
+
+
+@pytest.mark.parametrize(
+    "reference_seq, query_seq, cigar, expected_reference, expected_query",
+    [
+        ("ACTG", "ACTG", "4M@1->1", "ACTG", "ACTG"),
+        ("ACTG", "", "4D@1->1", "ACTG", "----"),
+        ("", "ACTG", "4I@1->1", "----", "ACTG"),
+        ("ACTGAC", "ACAC", "2M2D2M@1->1", "ACTGAC", "AC--AC"),
+        ("ACAC", "ACTGAC", "2M2I2M@1->1", "AC--AC", "ACTGAC"),
+        (
+            "GCTATGGGAA", "GCTATGGGAA",
+            "5M3D2M@1->1",
+            "GCTATGGGAA", "GCTAT---GG",
+        ),
+        (
+            "ACTG", "ACTG",
+            "2M99H77P2M@1->1",
+            "ACTG", "ACTG",
+        ),  # Ignores non-consuming operations.
+        ("ACTG", "ACTG", "2M@1->3", "TG", "AC"),
+        ("ACTG", "ACTG", "2M@3->1", "AC", "TG"),
+        ("ACTG", "ACTG", "2M@3->2", "CT", "TG"),
+    ],
+)
+def test_cigar_hit_to_msa(
+    reference_seq, query_seq, cigar, expected_reference, expected_query
+):
+    assert parsed_hit(cigar).to_msa(reference_seq, query_seq) == (
+        expected_reference,
+        expected_query,
+    )
+
+
+@pytest.mark.parametrize(
+    "cigar, reference_seq, query_seq",
+    [
+        ("10M@1->1", "A" * 3, "A" * 10),  # reference is shorter than CIGAR
+        ("10M@1->1", "A" * 10, "A" * 3),  # query is shorter than CIGAR
+        ("10D@1->1", "A" * 3, "A" * 3),
+        ("10I@1->1", "A" * 3, "A" * 3),
+        ("1M@99->1", "A" * 3, "A" * 3),
+        ("1M@1->99", "A" * 3, "A" * 3),
+        ("1M@99->99", "A" * 3, "A" * 3),
+    ],
+)
+def test_illigal_cigar_hit_to_msa(cigar, reference_seq, query_seq):
+    obj = parsed_hit(cigar)
+    with pytest.raises(ex.MSALengthError):
+        obj.to_msa(reference_seq, query_seq)

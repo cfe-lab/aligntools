@@ -257,8 +257,9 @@ class Cigar:
                     query_msa += '-'
 
             except IndexError:
-                raise ex.ParseError("CIGAR string corresponds to a larger"
-                                    " match than either reference or query.")
+                raise \
+                    ex.MSALengthError("CIGAR string corresponds to a larger"
+                                      " match than either reference or query.")
 
         return reference_msa, query_msa
 
@@ -771,8 +772,8 @@ class CigarHit:
         insertions or deletions.
         """
 
-        return self.cigar.to_msa(reference_seq[self.r_st:],
-                                 query_seq[self.q_st:])
+        return self.cigar.to_msa(reference_seq[(self.r_st - 1):self.r_ei],
+                                 query_seq[(self.q_st - 1):self.q_ei])
 
     def translate(self, reference_delta: int, query_delta: int) -> 'CigarHit':
         return CigarHit(cigar=self.cigar,

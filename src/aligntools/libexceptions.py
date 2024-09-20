@@ -15,6 +15,11 @@ class ParseError(ValueError, CigarError):
     pass
 
 
+class MSALengthError(IndexError, CigarError):
+    """Exception raised for bad MSA lengths."""
+    pass
+
+
 class InvalidOperationError(ValueError, CigarError):
     """Exception raised for invalid operations within CIGAR strings."""
     pass
