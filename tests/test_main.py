@@ -1049,6 +1049,22 @@ def test_cigar_coerce():
     assert basic == Cigar.coerce(tuple(lst))
 
 
+def test_cigar_serialization():
+    hit = Cigar.parse("3M")
+    assert str(hit) == "3M"
+
+    hit = Cigar.parse("3M2I3D2M")
+    assert str(hit) == "3M2I3D2M"
+
+    hit = Cigar.parse("3M")
+    assert repr(hit) \
+        == "Cigar('3M')"
+
+    hit = Cigar.parse("3M2I3D2M")
+    assert repr(hit) \
+        == "Cigar('3M2I3D2M')"
+
+
 def test_cigar_hit_translate():
     hit = parsed_hit("3M@1->1")
     assert hit == hit
