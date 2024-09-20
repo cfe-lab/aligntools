@@ -1058,3 +1058,19 @@ def test_cigar_hit_translate():
 
     translated_expected = parsed_hit("3M@6->4")
     assert translated == translated_expected
+
+
+def test_cigar_hit_serialization():
+    hit = parsed_hit("3M@1->1")
+    assert str(hit) == "3M@[1,3]->[1,3]"
+
+    hit = parsed_hit("3M2I3D2M@1->1")
+    assert str(hit) == "3M2I3D2M@[1,7]->[1,8]"
+
+    hit = parsed_hit("3M@1->1")
+    assert repr(hit) \
+        == "CigarHit(Cigar('3M'), r_st=1, r_ei=3, q_st=1, q_ei=3)"
+
+    hit = parsed_hit("3M2I3D2M@1->1")
+    assert repr(hit) \
+        == "CigarHit(Cigar('3M2I3D2M'), r_st=1, r_ei=8, q_st=1, q_ei=7)"
