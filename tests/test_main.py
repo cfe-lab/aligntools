@@ -1033,3 +1033,17 @@ def test_coordinate_mapping_repr():
         ", " \
         "{ 3: 1, 4: 3, 5: 5, None: 2, None: 4 }" \
         ")"
+
+
+def test_cigar_coerce():
+    lst = [(3, CigarActions.MATCH),
+           (5, CigarActions.INSERT),
+           (7, CigarActions.DELETE)]
+    basic = Cigar(lst)
+
+    assert basic == Cigar.coerce("3M5I7D")
+    assert basic == Cigar.coerce("2M1M5I7D")
+    assert basic == Cigar.coerce("2M1M1I4I3D4D")
+    assert basic == Cigar.coerce(basic)
+    assert basic == Cigar.coerce(lst)
+    assert basic == Cigar.coerce(tuple(lst))
