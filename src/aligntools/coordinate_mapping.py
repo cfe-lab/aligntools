@@ -60,4 +60,4 @@ class CoordinateMapping:
             == (other.ref_to_op, other.query_to_op)
 
     def __repr__(self):
-        return f'CoordinateMapping({self.ref_to_op},{self.query_to_op})'
+        return f'CoordinateMapping({self.ref_to_op}, {self.query_to_op})'

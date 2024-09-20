@@ -991,3 +991,31 @@ def test_coordinate_mapping_eq():
     assert mapping_1 == mapping_2
     assert mapping_1 != mapping_3
     assert mapping_1 != mapping_4
+
+
+def test_coordinate_mapping_repr():
+    mapping_1 = CoordinateMapping()
+    mapping_1.extend(2, 3, 0)
+    mapping_1.extend(3, 4, 1)
+
+    mapping_2 = CoordinateMapping()
+    mapping_2.extend(3, 4, 1)
+    mapping_2.extend(2, 3, 0)
+
+    mapping_3 = CoordinateMapping()
+    mapping_3.extend(2, 3, 0)
+    mapping_3.extend(3, 5, 1)
+
+    mapping_4 = CoordinateMapping()
+    mapping_4.extend(2, 3, 1)
+    mapping_4.extend(3, 4, 2)
+
+    assert repr(mapping_1) \
+        == repr(mapping_2) \
+        == "CoordinateMapping({ 2: 0, 3: 1 }, { 3: 0, 4: 1 })"
+
+    assert repr(mapping_3) \
+        == "CoordinateMapping({ 2: 0, 3: 1 }, { 3: 0, 5: 1 })"
+
+    assert repr(mapping_4) \
+        == "CoordinateMapping({ 2: 1, 3: 2 }, { 3: 1, 4: 2 })"

@@ -74,3 +74,16 @@ class IntDict(Mapping[int, int]):
 
     def __getitem__(self, key: int) -> int:
         return self._dict[key]
+
+    def __str__(self) -> str:
+        pairs = []
+
+        for k in sorted(self.domain):
+            pairs.append(f"{k}: {self._dict.get(k)}")
+
+        values_set = set(self.values())
+        for v in sorted(self.codomain):
+            if v not in values_set:
+                pairs.append(f"None: {v}")
+
+        return "{ " + ", ".join(pairs) + " }"
