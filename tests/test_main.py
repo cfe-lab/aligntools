@@ -4,7 +4,8 @@ import re
 from typing import Dict, Union
 
 from aligntools import Cigar, CigarHit, \
-    connect_cigar_hits, CigarActions, IntDict
+    connect_cigar_hits, CigarActions, \
+    IntDict, CoordinateMapping
 import aligntools.libexceptions as ex
 
 
@@ -968,3 +969,25 @@ def test_illigal_cigar_hit_to_msa(cigar, reference_seq, query_seq):
     obj = parsed_hit(cigar)
     with pytest.raises(ex.MSALengthError):
         obj.to_msa(reference_seq, query_seq)
+
+
+def test_coordinate_mapping_eq():
+    mapping_1 = CoordinateMapping()
+    mapping_1.extend(2, 3, 0)
+    mapping_1.extend(3, 4, 1)
+
+    mapping_2 = CoordinateMapping()
+    mapping_2.extend(3, 4, 1)
+    mapping_2.extend(2, 3, 0)
+
+    mapping_3 = CoordinateMapping()
+    mapping_3.extend(2, 3, 0)
+    mapping_3.extend(3, 5, 1)
+
+    mapping_4 = CoordinateMapping()
+    mapping_4.extend(2, 3, 1)
+    mapping_4.extend(3, 4, 2)
+
+    assert mapping_1 == mapping_2
+    assert mapping_1 != mapping_3
+    assert mapping_1 != mapping_4
