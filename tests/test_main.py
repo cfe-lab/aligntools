@@ -1,11 +1,11 @@
 import pytest
 from math import floor
 import re
-from typing import Dict, Union
+from typing import Mapping, Union
 
 from aligntools import Cigar, CigarHit, \
     connect_cigar_hits, CigarActions, \
-    IntDict, CoordinateMapping
+    FrozenIntDict, CoordinateMapping
 import aligntools.libexceptions as ex
 
 
@@ -89,8 +89,8 @@ def test_cigar_to_coordinate_mapping(cigar_str, expected_mapping):
 
 @pytest.mark.parametrize("cigar_str", [x[0] for x in cigar_mapping_cases])
 def test_cigar_to_coordinate_bijection_property(cigar_str):
-    def inverse(d: Union[IntDict, Dict[object, object]]) \
-            -> Dict[object, object]:
+    def inverse(d: Union[FrozenIntDict, Mapping[object, object]]) \
+            -> Mapping[object, object]:
         return {v: k for k, v in d.items()}
 
     mapping = Cigar.coerce(cigar_str).coordinate_mapping

@@ -1,8 +1,34 @@
 
-from typing import Optional, AbstractSet, Mapping, Dict, Iterator, MutableSet
+from typing import Optional, AbstractSet, Mapping, \
+    Dict, Iterator, MutableSet
+
+from abc import ABC, abstractmethod, abstractproperty
 
 
-class IntDict(Mapping[int, int]):
+class FrozenIntDict(ABC, Mapping[int, int]):
+    @abstractproperty
+    def domain(self) -> AbstractSet[int]:
+        ...
+
+    @abstractproperty
+    def codomain(self) -> AbstractSet[int]:
+        ...
+
+    @abstractmethod
+    def left_max(self, index: int) -> Optional[int]:
+        ...
+
+    @abstractmethod
+    def right_min(self, index: int) -> Optional[int]:
+        ...
+
+    @abstractmethod
+    def translate(self, domain_delta: int, codomain_delta: int) \
+            -> 'IntDict':
+        ...
+
+
+class IntDict(FrozenIntDict):
     """
     An extension of the basic Python dictionary designed for
     integer-to-integer mappings.

@@ -1,7 +1,7 @@
 
 from typing import Optional
 
-from aligntools.int_dict import IntDict
+from aligntools.int_dict import IntDict, FrozenIntDict
 
 
 class CoordinateMapping:
@@ -16,20 +16,20 @@ class CoordinateMapping:
     """
 
     def __init__(self) -> None:
-        self.ref_to_query = IntDict()
-        self.query_to_ref = IntDict()
-        self.ref_to_op = IntDict()
-        self.query_to_op = IntDict()
+        self._ref_to_query = IntDict()
+        self._query_to_ref = IntDict()
+        self._ref_to_op = IntDict()
+        self._query_to_op = IntDict()
 
     def extend(self,
                ref_index: Optional[int],
                query_index: Optional[int],
                op_index: int) -> None:
 
-        self.ref_to_query.extend(ref_index, query_index)
-        self.query_to_ref.extend(query_index, ref_index)
-        self.ref_to_op.extend(ref_index, op_index)
-        self.query_to_op.extend(query_index, op_index)
+        self._ref_to_query.extend(ref_index, query_index)
+        self._query_to_ref.extend(query_index, ref_index)
+        self._ref_to_op.extend(ref_index, op_index)
+        self._query_to_op.extend(query_index, op_index)
 
     def translate(self, reference_delta: int, query_delta: int) \
             -> 'CoordinateMapping':
@@ -46,14 +46,30 @@ class CoordinateMapping:
 
         ret = CoordinateMapping()
 
-        ret.ref_to_query = self.ref_to_query.translate(
+        ret._ref_to_query = self.ref_to_query.translate(
             reference_delta, query_delta)
-        ret.query_to_ref = self.query_to_ref.translate(
+        ret._query_to_ref = self.query_to_ref.translate(
             query_delta, reference_delta)
-        ret.ref_to_op = self.ref_to_op.translate(reference_delta, 0)
-        ret.query_to_op = self.query_to_op.translate(query_delta, 0)
+        ret._ref_to_op = self.ref_to_op.translate(reference_delta, 0)
+        ret._query_to_op = self.query_to_op.translate(query_delta, 0)
 
         return ret
+
+    @property
+    def ref_to_op(self) -> FrozenIntDict:
+        return self._ref_to_op
+
+    @property
+    def query_to_op(self) -> FrozenIntDict:
+        return self._query_to_op
+
+    @property
+    def ref_to_query(self) -> FrozenIntDict:
+        return self._ref_to_query
+
+    @property
+    def query_to_ref(self) -> FrozenIntDict:
+        return self._query_to_ref
 
     def __eq__(self, other):
         return (self.ref_to_op, self.query_to_op) \

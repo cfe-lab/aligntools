@@ -4,7 +4,7 @@ from aligntools.libexceptions import CigarError, CoersionError, \
     CigarConnectError, EmptyCigarHitListError
 from .lib import CigarActions, Cigar, CigarHit, connect_cigar_hits
 from .coordinate_mapping import CoordinateMapping
-from .int_dict import IntDict
+from .int_dict import FrozenIntDict
 
 __all__ = [
     'CigarError',
@@ -19,5 +19,5 @@ __all__ = [
     'CigarHit',
     'connect_cigar_hits',
     'CoordinateMapping',
-    'IntDict'
+    'FrozenIntDict',
 ]
