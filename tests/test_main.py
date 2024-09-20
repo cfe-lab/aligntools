@@ -1047,3 +1047,14 @@ def test_cigar_coerce():
     assert basic == Cigar.coerce(basic)
     assert basic == Cigar.coerce(lst)
     assert basic == Cigar.coerce(tuple(lst))
+
+
+def test_cigar_hit_translate():
+    hit = parsed_hit("3M@1->1")
+    assert hit == hit
+
+    translated = hit.translate(3, 5)
+    assert hit != translated
+
+    translated_expected = parsed_hit("3M@6->4")
+    assert translated == translated_expected
