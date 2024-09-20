@@ -2,7 +2,7 @@
 [![codecov](https://codecov.io/gh/cfe-lab/aligntools/branch/master/graph/badge.svg)](https://codecov.io/gh/cfe-lab/aligntools)
 [![types - Mypy](https://img.shields.io/badge/types-Mypy-blue.svg)](https://github.com/python/mypy)
 [![flake8 checked](https://img.shields.io/badge/flake8-checked-blueviolet.svg)](https://github.com/PyCQA/flake8)
-[![License - GPL3](https://img.shields.io/badge/license-GPLv3-blue)](https://spdx.org/licenses/)
+[![License - AGPL3](https://img.shields.io/badge/license-AGPLv3-blue)](https://spdx.org/licenses/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/cfe-lab/aligntools/pulls)
 
 # Alignment tools
@@ -225,4 +225,4 @@ git push origin HEAD
 
 ## License
 
-This project is licensed under the GPLv3.0 License. See the COPYING file for details.
+This project is licensed under the AGPLv3.0 License. See the COPYING file for details.
