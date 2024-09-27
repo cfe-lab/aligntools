@@ -1,5 +1,5 @@
 """
-Module for handling CIGAR strings and related alignment formats.
+Module for handling CIGAR hits.
 """
 
 from math import ceil, floor
