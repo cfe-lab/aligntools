@@ -14,14 +14,21 @@ from aligntools.coordinate_mapping import CoordinateMapping
 import aligntools.libexceptions as ex
 
 
-# Mapping as defined in https://samtools.github.io/hts-specs/SAMv1.pdf, page 8
-CigarActions = IntEnum(
-    'CigarActions',
+class CigarActions(IntEnum):
     """
-    MATCH INSERT DELETE SKIPPED SOFT_CLIPPED
-    HARD_CLIPPED PADDING SEQ_MATCH MISMATCH
-    """,
-    start=0)
+    Mapping as defined on page 8 of
+      <https://samtools.github.io/hts-specs/SAMv1.pdf>.
+    """
+
+    MATCH = 0
+    INSERT = 1
+    DELETE = 2
+    SKIPPED = 3
+    SOFT_CLIPPED = 4
+    HARD_CLIPPED = 5
+    PADDING = 6
+    SEQ_MATCH = 7
+    MISMATCH = 8
 
 
 class Cigar:
