@@ -35,15 +35,7 @@ for operation in cigar.iterate_operations():
     print(operation)
 
 # Output:
-# CigarActions.MATCH
-# CigarActions.MATCH
-# ... (continues)
-# CigarActions.MATCH
-# CigarActions.INSERT
-# CigarActions.DELETE
-# ... (continues)
-# CigarActions.MATCH
-# CigarActions.MATCH
+# M M M M M M M M M M I D D D D D M M M M M
 
 # Calculate the lengths of the reference and query sequences
 print(f"Reference Length: {cigar.ref_length}")
