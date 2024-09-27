@@ -2,7 +2,6 @@
 Module for handling CIGAR strings and related alignment formats.
 """
 
-from enum import IntEnum
 from math import ceil, floor
 import re
 from typing import Tuple, Iterable, Optional, List, Union
@@ -11,24 +10,8 @@ from functools import cached_property, reduce
 from fractions import Fraction
 
 from aligntools.coordinate_mapping import CoordinateMapping
+from aligntools.cigar_actions import CigarActions
 import aligntools.libexceptions as ex
-
-
-class CigarActions(IntEnum):
-    """
-    Mapping as defined on page 8 of
-      <https://samtools.github.io/hts-specs/SAMv1.pdf>.
-    """
-
-    MATCH = 0
-    INSERT = 1
-    DELETE = 2
-    SKIPPED = 3
-    SOFT_CLIPPED = 4
-    HARD_CLIPPED = 5
-    PADDING = 6
-    SEQ_MATCH = 7
-    MISMATCH = 8
 
 
 class Cigar:
