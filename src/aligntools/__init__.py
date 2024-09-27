@@ -1,5 +1,5 @@
 
-from aligntools.libexceptions import CigarError, CoersionError, \
+from aligntools.exceptions import CigarError, CoersionError, \
     ParseError, InvalidOperationError, CigarHitRangeError, \
     CigarConnectError, EmptyCigarHitListError
 from .cigar_hit import CigarHit, connect_cigar_hits

@@ -6,7 +6,7 @@ from typing import Mapping, Union
 from aligntools import Cigar, CigarHit, \
     connect_cigar_hits, CigarActions, \
     FrozenIntDict, CoordinateMapping
-import aligntools.libexceptions as ex
+import aligntools.exceptions as ex
 
 
 cigar_mapping_cases = [

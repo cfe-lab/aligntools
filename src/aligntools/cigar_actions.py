@@ -1,7 +1,7 @@
 
 from enum import IntEnum
 
-import aligntools.libexceptions as ex
+import aligntools.exceptions as ex
 
 
 class CigarActions(IntEnum):

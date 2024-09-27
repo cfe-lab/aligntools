@@ -8,7 +8,7 @@ from functools import cached_property
 
 from aligntools.coordinate_mapping import CoordinateMapping
 from aligntools.cigar_actions import CigarActions
-import aligntools.libexceptions as ex
+import aligntools.exceptions as ex
 
 
 class Cigar:

@@ -11,7 +11,7 @@ from fractions import Fraction
 from aligntools.coordinate_mapping import CoordinateMapping
 from aligntools.cigar_actions import CigarActions
 from aligntools.cigar import Cigar
-import aligntools.libexceptions as ex
+import aligntools.exceptions as ex
 
 
 def intervals_overlap(x: Tuple[int, int], y: Tuple[int, int]) -> bool:
