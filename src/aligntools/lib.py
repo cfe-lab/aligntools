@@ -325,46 +325,13 @@ class Cigar:
         #  Boring boilerplate code below  #
         #                                 #
 
-    OP_MAPPING = {
-        # Alignment match (can be a sequence match or mismatch)
-        'M': CigarActions.MATCH,
-
-        # Insertion to the reference
-        'I': CigarActions.INSERT,
-
-        # Deletion from the reference
-        'D': CigarActions.DELETE,
-
-        # Skipped region from the reference
-        'N': CigarActions.SKIPPED,
-
-        # Soft clip on the read (not aligned but present in the read)
-        'S': CigarActions.SOFT_CLIPPED,
-
-        # Hard clip on the read (not present in the read)
-        'H': CigarActions.HARD_CLIPPED,
-
-        # Padding (silent deletion from padded reference)
-        'P': CigarActions.PADDING,
-
-        # Sequence match
-        '=': CigarActions.SEQ_MATCH,
-
-        # Sequence mismatch
-        'X': CigarActions.MISMATCH,
-    }
-
     @staticmethod
     def parse_operation(operation: str) -> CigarActions:
-        if operation in Cigar.OP_MAPPING:
-            return Cigar.OP_MAPPING[operation]
-        else:
+        try:
+            return CigarActions.parse(operation)
+        except ex.ParseError:
             raise ex.InvalidOperationError(
                 f"Unexpected CIGAR action: {operation!r}.")
-
-    @staticmethod
-    def operation_to_str(op: CigarActions) -> str:
-        return [k for (k, v) in Cigar.OP_MAPPING.items() if v == op][0]
 
     @staticmethod
     def parse(string: str) -> 'Cigar':
@@ -450,8 +417,7 @@ class Cigar:
 
     def __str__(self):
         """ Inverse of `Cigar.parse` """
-        return ''.join('{}{}'.format(num, Cigar.operation_to_str(op))
-                       for num, op in self._data)
+        return ''.join('{}{}'.format(num, op) for num, op in self._data)
 
 
 def intervals_overlap(x: Tuple[int, int], y: Tuple[int, int]) -> bool:

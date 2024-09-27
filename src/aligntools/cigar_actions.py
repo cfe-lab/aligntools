@@ -40,7 +40,7 @@ class CigarActions(IntEnum):
     @staticmethod
     def parse(value: str) -> 'CigarActions':
         ret = OP_MAPPING.get(value)
-        if not ret:
+        if ret is None:
             raise ex.ParseError(f"Invalid action: {value}")
         return ret
 
