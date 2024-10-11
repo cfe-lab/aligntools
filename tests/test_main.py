@@ -1090,3 +1090,35 @@ def test_cigar_hit_serialization():
     hit = parsed_hit("3M2I3D2M@1->1")
     assert repr(hit) \
         == "CigarHit(Cigar('3M2I3D2M'), r_st=1, r_ei=8, q_st=1, q_ei=7)"
+
+
+@pytest.mark.parametrize(
+    "hit_str, expected",
+    [
+        ("3M@[0,2]->[0,2]",
+         CigarHit(Cigar.coerce("3M"), 0, 2, 0, 2)),
+        ("3M2I3D2M@[1,7]->[1,8]",
+         CigarHit(Cigar.coerce("3M2I3D2M"), 1, 8, 1, 7)),
+        ("5M10I5D@[5,19]->[5,14]",
+         CigarHit(Cigar.coerce("5M10I5D"), 5, 14, 5, 19)),
+    ]
+)
+def test_parse_cigar_hit_valid(hit_str, expected):
+    result = CigarHit.parse(hit_str)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "hit_str",
+    [
+        "whatever",
+        "3K@[0,2]->[0,2]",
+        "3K@[a,b]->[c,d]",
+        "3K@[30,10]->[1,5]",
+        "3K@[3,10]->[20,5]",
+        "3K@[30,10]->[20,5]",
+    ]
+)
+def test_parse_cigar_hit_invalid(hit_str):
+    with pytest.raises(ex.ParseError):
+        CigarHit.parse(hit_str)

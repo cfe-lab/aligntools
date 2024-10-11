@@ -20,7 +20,7 @@ class MSALengthError(IndexError, CigarError):
     pass
 
 
-class InvalidOperationError(ValueError, CigarError):
+class InvalidOperationError(ParseError, CigarError):
     """Exception raised for invalid operations within CIGAR strings."""
     pass
 

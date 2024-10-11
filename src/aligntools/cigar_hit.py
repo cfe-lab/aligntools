@@ -339,7 +339,7 @@ class CigarHit:
                         q_ei=self.q_ei + query_delta)
 
     @staticmethod
-    def parse_cigar_hit(string: str) -> 'CigarHit':
+    def parse(string: str) -> 'CigarHit':
         """
         Parses a string representation of a CigarHit
         and returns a CigarHit object.
@@ -357,16 +357,12 @@ class CigarHit:
         if not match:
             raise ex.ParseError(f"Invalid CigarHit string format: {string!r}.")
 
-        try:
-            # Extracting components from the matched regex groups
-            cigar_str = match.group('cigar')
-            q_st = int(match.group('q_st'))
-            q_ei = int(match.group('q_ei'))
-            r_st = int(match.group('r_st'))
-            r_ei = int(match.group('r_ei'))
-        except ValueError as e:
-            raise ex.ParseError(f"Error parsing indices in: {string!r}.") \
-                from e
+        # Extracting components from the matched regex groups
+        cigar_str = match.group('cigar')
+        q_st = int(match.group('q_st'))
+        q_ei = int(match.group('q_ei'))
+        r_st = int(match.group('r_st'))
+        r_ei = int(match.group('r_ei'))
 
         # Validating that start indices
         # are less than or equal to end indices.
