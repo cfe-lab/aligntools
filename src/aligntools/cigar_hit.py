@@ -7,6 +7,7 @@ from typing import Tuple, Iterable, Optional, List
 from dataclasses import dataclass
 from functools import cached_property, reduce
 from fractions import Fraction
+import re
 
 from aligntools.coordinate_mapping import CoordinateMapping
 from aligntools.cigar_actions import CigarActions
@@ -17,6 +18,11 @@ import aligntools.exceptions as ex
 def intervals_overlap(x: Tuple[int, int], y: Tuple[int, int]) -> bool:
     """ Check if two intervals [x0, x1] and [y0, y1] overlap. """
     return x[0] <= y[1] and x[1] >= y[0]
+
+
+parse_expr = re.compile(r'(?P<cigar>.+)@'
+                        r'\[(?P<q_st>\d+),(?P<q_ei>\d+)\]->'
+                        r'\[(?P<r_st>\d+),(?P<r_ei>\d+)\]')
 
 
 @dataclass(frozen=True)
@@ -331,6 +337,51 @@ class CigarHit:
                         r_ei=self.r_ei + reference_delta,
                         q_st=self.q_st + query_delta,
                         q_ei=self.q_ei + query_delta)
+
+    @staticmethod
+    def parse_cigar_hit(string: str) -> 'CigarHit':
+        """
+        Parses a string representation of a CigarHit
+        and returns a CigarHit object.
+
+        This method is inverse of CigarHit.__str__.
+
+        :param hit_str: A string representation of a CigarHit.
+        :return: CigarHit object parsed from the input string.
+        :raises ParseError: If the string cannot be parsed into a CigarHit.
+        """
+
+        # Regular expression to match the structure of a serialized CigarHit
+        match = parse_expr.match(string)
+
+        if not match:
+            raise ex.ParseError(f"Invalid CigarHit string format: {string!r}.")
+
+        try:
+            # Extracting components from the matched regex groups
+            cigar_str = match.group('cigar')
+            q_st = int(match.group('q_st'))
+            q_ei = int(match.group('q_ei'))
+            r_st = int(match.group('r_st'))
+            r_ei = int(match.group('r_ei'))
+        except ValueError as e:
+            raise ex.ParseError(f"Error parsing indices in: {string!r}.") \
+                from e
+
+        # Validating that start indices
+        # are less than or equal to end indices.
+        if q_st > q_ei + 1:
+            raise ex.ParseError(
+                f"Query start index ({q_st}) "
+                f"greater than end index ({q_ei} + 1) in: {string!r}.")
+
+        if r_st > r_ei + 1:
+            raise ex.ParseError(
+                f"Reference start index ({r_st}) "
+                f"greater than end index ({r_ei} + 1) in: {string!r}.")
+
+        cigar: Cigar = Cigar.coerce(cigar_str)
+        return CigarHit(cigar, r_st, r_ei, q_st, q_ei)
 
     def __repr__(self):
         return 'CigarHit(%r, r_st=%r, r_ei=%r, q_st=%r, q_ei=%r)' \
