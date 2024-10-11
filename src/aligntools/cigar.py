@@ -268,33 +268,21 @@ class Cigar:
                                 " must be of the same length.")
 
         operations = []
-        curr_op = ''
-        count = 0
 
         for ref_base, query_base in zip(reference, query):
             if ref_base == '-' and query_base == '-':
                 # This scenario should not happen in a correct MSA
                 continue
             elif ref_base == '-':
-                op = 'I'  # Insertion in reference
+                op = CigarActions.INSERT
             elif query_base == '-':
-                op = 'D'  # Deletion from reference
+                op = CigarActions.DELETE
             elif ref_base == query_base:
-                op = 'M'  # Match/Mismatch (Exact match)
+                op = CigarActions.MATCH
             else:
-                op = 'M'  # Match/Mismatch (Mismatch)
+                op = CigarActions.MATCH
 
-            if op == curr_op:
-                count += 1
-            else:
-                if curr_op:  # Not the first operation
-                    operations.append((count, Cigar.parse_operation(curr_op)))
-                curr_op = op
-                count = 1
-
-        # Don't forget to add the last operation
-        if curr_op:
-            operations.append((count, Cigar.parse_operation(curr_op)))
+            operations.append((1, op))
 
         return Cigar(operations)
 
