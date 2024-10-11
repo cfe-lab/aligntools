@@ -3,7 +3,7 @@ Module for handling CIGAR strings.
 """
 
 import re
-from typing import Tuple, Iterable, Optional, List, Union
+from typing import Tuple, Iterable, Optional, Union
 from functools import cached_property
 
 from aligntools.coordinate_mapping import CoordinateMapping
@@ -38,8 +38,8 @@ class Cigar:
     """
 
     def __init__(self, data: Iterable[Tuple[int, CigarActions]]) -> None:
-        self._data: List[Tuple[int, CigarActions]] \
-            = list(Cigar.normalize(data))
+        self._data: Tuple[Tuple[int, CigarActions], ...] \
+            = tuple(Cigar.normalize(data))
 
     @staticmethod
     def coerce(obj: Union['Cigar', str, Iterable[Tuple[int, CigarActions]]]) \
