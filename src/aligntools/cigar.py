@@ -17,8 +17,8 @@ class Cigar:
     sequence using the Compact Idiosyncratic Gapped Alignment Report
     (CIGAR) string format.
 
-    A CIGAR string is a sequence of operation codes ('M', 'I', 'D',
-    etc.) each preceded by the number of bases or residues to which
+    A CIGAR string is a sequence of operation codes ('M', 'I', 'D', etc.)
+    each preceded by the number of bases or residues to which
     the operation applies.
 
     The class abstracts a CIGAR string as a sequence of discrete
