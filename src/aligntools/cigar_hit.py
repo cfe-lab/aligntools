@@ -434,5 +434,5 @@ def connect_cigar_hits(cigar_hits: List[CigarHit]) -> List[CigarHit]:
 
     # Collect all intervals back together,
     # connecting them with CigarActions.DELETE.
-    return [reduce(lambda x, y: x.connect(y), group)
+    return [reduce(CigarHit.connect, group)
             for group in sorted_groups]
