@@ -62,12 +62,20 @@ class CigarHit:
                 f" but CIGAR hit range is {self.query_length}.")
 
     @property
+    def r_en(self):
+        return self.r_ei + 1
+
+    @property
+    def q_en(self):
+        return self.q_ei + 1
+
+    @property
     def ref_length(self):
-        return self.r_ei + 1 - self.r_st
+        return self.r_en - self.r_st
 
     @property
     def query_length(self):
-        return self.q_ei + 1 - self.q_st
+        return self.q_en - self.q_st
 
     @staticmethod
     def from_default_alignment(r_st: int, r_ei: int, q_st: int, q_ei: int) \
