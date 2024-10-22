@@ -3,7 +3,7 @@ Module for handling CIGAR hits.
 """
 
 from math import ceil, floor
-from typing import Tuple, Iterable, Optional, List
+from typing import Tuple, Iterable, Optional, List, Sequence, Iterator
 from dataclasses import dataclass
 from functools import cached_property, reduce
 from fractions import Fraction
@@ -396,7 +396,7 @@ class CigarHit:
             % (str(self.cigar), self.q_st, self.q_ei, self.r_st, self.r_ei)
 
 
-def connect_cigar_hits(cigar_hits: List[CigarHit]) -> List[CigarHit]:
+def connect_cigar_hits(cigar_hits: Sequence[CigarHit]) -> Iterator[CigarHit]:
     """
     This function exists to deal with the fact that mappy does not
     always connect big gaps, and returns surrounding parts as two
@@ -442,5 +442,5 @@ def connect_cigar_hits(cigar_hits: List[CigarHit]) -> List[CigarHit]:
 
     # Collect all intervals back together,
     # connecting them with CigarActions.DELETE.
-    return [reduce(CigarHit.connect, group)
-            for group in sorted_groups]
+    for group in sorted_groups:
+        yield reduce(CigarHit.connect, group)

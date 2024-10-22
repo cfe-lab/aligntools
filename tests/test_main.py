@@ -813,10 +813,10 @@ def test_connect_cigar_hits(hits, expected_result):
 
     if isinstance(expected_result, Exception):
         with pytest.raises(type(expected_result)):
-            connect_cigar_hits(hits)
+            list(connect_cigar_hits(hits))
     else:
         expected_result = list(map(parsed_hit, expected_result))
-        result = connect_cigar_hits(hits)
+        result = list(connect_cigar_hits(hits))
         assert expected_result == result
 
 
