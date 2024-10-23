@@ -1058,11 +1058,11 @@ def test_cigar_serialization():
 
     hit = Cigar.parse("3M")
     assert repr(hit) \
-        == "Cigar('3M')"
+        == "Cigar.parse('3M')"
 
     hit = Cigar.parse("3M2I3D2M")
     assert repr(hit) \
-        == "Cigar('3M2I3D2M')"
+        == "Cigar.parse('3M2I3D2M')"
 
 
 def test_cigar_hit_translate():
@@ -1085,11 +1085,11 @@ def test_cigar_hit_serialization():
 
     hit = parsed_hit("3M@1->1")
     assert repr(hit) \
-        == "CigarHit(Cigar('3M'), r_st=1, r_ei=3, q_st=1, q_ei=3)"
+        == "CigarHit(Cigar.parse('3M'), r_st=1, r_ei=3, q_st=1, q_ei=3)"
 
     hit = parsed_hit("3M2I3D2M@1->1")
     assert repr(hit) \
-        == "CigarHit(Cigar('3M2I3D2M'), r_st=1, r_ei=8, q_st=1, q_ei=7)"
+        == "CigarHit(Cigar.parse('3M2I3D2M'), r_st=1, r_ei=8, q_st=1, q_ei=7)"
 
 
 @pytest.mark.parametrize(

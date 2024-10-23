@@ -398,7 +398,7 @@ class Cigar:
         return Cigar(self._data + other._data)
 
     def __repr__(self):
-        return f'Cigar({str(self)!r})'
+        return f'Cigar.parse({str(self)!r})'
 
     def __str__(self):
         """ Inverse of `Cigar.parse` """
