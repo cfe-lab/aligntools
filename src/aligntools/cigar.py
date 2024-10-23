@@ -11,6 +11,9 @@ from aligntools.cigar_actions import CigarActions
 import aligntools.exceptions as ex
 
 
+CigarLike = Union['Cigar', str, Iterable[Tuple[int, CigarActions]]]
+
+
 class Cigar:
     """
     Represents an alignment between a query sequence and a reference
@@ -42,7 +45,7 @@ class Cigar:
             = tuple(Cigar.normalize(data))
 
     @staticmethod
-    def coerce(obj: Union['Cigar', str, Iterable[Tuple[int, CigarActions]]]) \
+    def coerce(obj: CigarLike) \
             -> 'Cigar':
         if isinstance(obj, Cigar):
             return obj
