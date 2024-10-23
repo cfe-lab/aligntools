@@ -6,7 +6,7 @@ from .cigar_hit import CigarHit, connect_cigar_hits
 from .coordinate_mapping import CoordinateMapping
 from .int_dict import FrozenIntDict
 from .cigar_actions import CigarActions
-from .cigar import Cigar, CigarLike
+from .cigar import Cigar
 
 __all__ = [
     'CigarError',
@@ -22,5 +22,4 @@ __all__ = [
     'connect_cigar_hits',
     'CoordinateMapping',
     'FrozenIntDict',
-    'CigarLike',
 ]

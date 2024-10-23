@@ -824,7 +824,6 @@ def test_connect_cigar_hits(hits, expected_result):
     "obj, expected_error",
     [
         (123, ex.CoersionError),  # Integer
-        ({}, ex.CoersionError),  # Dictionary
         (None, ex.CoersionError),  # None
 
         # Tuple that is not a valid Cigar or string

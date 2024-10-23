@@ -3,7 +3,8 @@ Module for handling CIGAR strings.
 """
 
 import re
-from typing import Tuple, Iterable, Optional, Union
+import collections.abc
+from typing import Tuple, Iterable, Optional, Union, NoReturn
 from functools import cached_property
 
 from aligntools.coordinate_mapping import CoordinateMapping
@@ -45,18 +46,19 @@ class Cigar:
             = tuple(Cigar.normalize(data))
 
     @staticmethod
-    def coerce(obj: CigarLike) \
-            -> 'Cigar':
+    def coerce(obj: CigarLike) -> 'Cigar':
         if isinstance(obj, Cigar):
             return obj
 
-        if isinstance(obj, str):
-            return Cigar.parse(obj)
+        elif isinstance(obj, collections.abc.Iterable):
+            if isinstance(obj, str):
+                return Cigar.parse(obj)
+            else:
+                return Cigar(obj)
 
-        if isinstance(obj, list) or isinstance(obj, tuple):
-            return Cigar(obj)
-
-        raise ex.CoersionError(f"Cannot coerce {obj!r} to CIGAR string.")
+        else:
+            _: NoReturn = obj
+            raise ex.CoersionError(f"Cannot coerce {obj!r} to CIGAR string.")
 
     def iterate_operations(self) -> Iterable[CigarActions]:
         """
