@@ -414,9 +414,8 @@ def connect_nonoverlapping_cigar_hits(cigar_hits: Iterable[CigarHit]) \
 
     def find_group(phit: CigarHit) -> None:
         for group in sorted_groups:
-            if phit.q_st > group[-1].q_ei and \
-               all(not phit.overlaps_in_reference(other) and
-                   not phit.overlaps_in_query(other)
+            if all(phit.q_st > other.q_ei and
+                   phit.r_st > other.r_ei
                    for other in group):
                 group.append(phit)
                 return
