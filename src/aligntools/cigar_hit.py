@@ -3,7 +3,7 @@ Module for handling CIGAR hits.
 """
 
 from math import ceil, floor
-from typing import Tuple, Iterable, Optional, List, Iterator
+from typing import Tuple, Iterable, Optional, List, Iterator, Callable
 from dataclasses import dataclass
 from functools import cached_property, reduce
 from fractions import Fraction
@@ -394,6 +394,41 @@ class CigarHit:
     def __str__(self):
         return '%s@[%d,%d]->[%d,%d]' \
             % (str(self.cigar), self.q_st, self.q_ei, self.r_st, self.r_ei)
+
+
+def drop_overlapping_cigar_hits(cigar_hits: Iterable[CigarHit],
+                                quality: Callable[[CigarHit], int]) \
+        -> Iterator[CigarHit]:
+    """
+    Filter overlapping CigarHit objects based on a quality criterion.
+
+    This function returns an iterator over a subset of these `cigar_hits`,
+    filtering out any hits that overlap in the query space with a
+    lower quality hit.
+
+    Parameters:
+    - cigar_hits: objects to be processed.
+    - quality: The function that sorts `cigar_hits`.
+      It accepts a CigarHit and returns a value indicating
+      its "quality".
+
+    Yields:
+    - Non-overlapping CigarHit objects. If two hits overlap in the
+      query space, only the hit with the better quality (as determined
+      by the quality function's ordering) will be yielded.
+    """
+
+    # Sort by quality. Highest quality first.
+    sorted_hits = sorted(cigar_hits, key=quality, reverse=True)
+
+    # Earlier matches have priority over ones that come after.
+    returned: List[CigarHit] = []
+    for hit in sorted_hits:
+        if any(earlier.overlaps_in_query(hit) for earlier in returned):
+            continue
+
+        yield hit
+        returned.append(hit)
 
 
 def connect_nonoverlapping_cigar_hits(cigar_hits: Iterable[CigarHit]) \

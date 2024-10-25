@@ -4,8 +4,8 @@ import re
 from typing import Mapping, Union
 
 from aligntools import Cigar, CigarHit, \
-    connect_nonoverlapping_cigar_hits, CigarActions, \
-    FrozenIntDict, CoordinateMapping
+    connect_nonoverlapping_cigar_hits, drop_overlapping_cigar_hits, \
+    CigarActions, FrozenIntDict, CoordinateMapping
 import aligntools.exceptions as ex
 
 
@@ -817,6 +817,38 @@ def test_connect_cigar_hits(hits, expected_result):
         expected_result = list(map(parsed_hit, expected_result))
         result = list(connect_nonoverlapping_cigar_hits(hits))
         assert expected_result == result
+
+
+@pytest.mark.parametrize(
+    "hits, quality_fn, expected",
+    [
+        # Test for non-overlapping hits
+        (["5M@0->0", "5M@10->10"], lambda x: x.ref_length,
+         ["5M@0->0", "5M@10->10"]),
+
+        # Test for overlapping hits keeping the higher quality one
+        (["3M@0->0", "5M@2->2"], lambda x: x.ref_length,
+         ["5M@2->2"]),
+
+        # Test for overlapping hits with identical quality (arbitrary result)
+        # Expecting first element due to stable sorting assumption.
+        (["5M@0->0", "5M@2->2"], lambda x: 1,
+         ["5M@0->0"]),
+
+        # Test with custom quality criteria preferring earlier starts
+        (["5M@0->0", "5M@2->2"], lambda x: x.r_st,
+         ["5M@2->2"]),
+
+        # Test with an empty list
+        ([], lambda x: x.ref_length,
+         []),
+    ]
+)
+def test_drop_overlapping_cigar_hits(hits, quality_fn, expected):
+    hits = list(map(parsed_hit, hits))
+    expected_hits = list(map(parsed_hit, expected))
+    results = list(drop_overlapping_cigar_hits(hits, quality_fn))
+    assert results == expected_hits
 
 
 @pytest.mark.parametrize(
