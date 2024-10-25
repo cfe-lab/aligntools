@@ -757,7 +757,7 @@ def test_illigal_cigar_to_msa(cigar, reference_seq, query_seq):
     ]
 )
 def test_from_msa(reference, query, expected_cigar_str):
-    cigar = Cigar.from_msa(reference, query)
+    cigar = Cigar.from_msa(reference, query).relax()
     assert str(cigar) == expected_cigar_str
 
 

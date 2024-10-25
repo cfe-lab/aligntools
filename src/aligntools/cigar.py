@@ -220,6 +220,15 @@ class Cigar:
 
         return mapping
 
+    def relax(self) -> 'Cigar':
+        """
+        Turn `CigarActions.SEQ_MATCH` and `CigarActions.MISMATCH`
+        into `CigarActions.MATCH`.
+        """
+
+        new = [(count, action.relax()) for (count, action) in self._data]
+        return Cigar(new)
+
     def to_msa(self, reference_seq: str, query_seq: str) -> Tuple[str, str]:
         """
         Constructs a multiple sequence alignment (MSA) representation
@@ -283,9 +292,9 @@ class Cigar:
             elif query_base == '-':
                 op = CigarActions.DELETE
             elif ref_base == query_base:
-                op = CigarActions.MATCH
+                op = CigarActions.SEQ_MATCH
             else:
-                op = CigarActions.MATCH
+                op = CigarActions.MISMATCH
 
             operations.append((1, op))
 

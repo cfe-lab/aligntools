@@ -47,6 +47,14 @@ class CigarActions(IntEnum):
     def __str__(self) -> str:
         return OP_MAPPING_REV[self]
 
+    def relax(self) -> 'CigarActions':
+        if self == CigarActions.SEQ_MATCH:
+            return CigarActions.MATCH
+        elif self == CigarActions.MISMATCH:
+            return CigarActions.MATCH
+        else:
+            return self
+
 
 OP_MAPPING = {
     'M': CigarActions.MATCH,
