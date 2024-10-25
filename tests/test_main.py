@@ -799,8 +799,8 @@ connect_cigar_hits_cases = [
     # Combining hits including hard-clipping,
     # which should be ignored in alignments
     (["2H5M1H@3->1", "2H5M1H@13->11"], ["2H5M1H5D5I2H5M1H@3->1"]),
-    # An empty list of hits should raise a ValueError
-    ([], ex.EmptyCigarHitListError("Expected a non-empty list of cigar hits")),
+    # An empty list of hits is okay.
+    ([], []),
     # Before by reference, after by query
     (["4M@8->1", "4M@1->10"], ["4M@8->1", "4M@1->10"]),
 ]

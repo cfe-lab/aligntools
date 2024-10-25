@@ -406,10 +406,6 @@ def connect_nonoverlapping_cigar_hits(cigar_hits: Sequence[CigarHit]) \
     For those cases we simply connect all the parts that do not overlap.
     """
 
-    if len(cigar_hits) == 0:
-        raise ex.EmptyCigarHitListError(
-            "Expected a non-empty list of cigar hits.")
-
     # Sort by interval start positions.
     sorted_parts = sorted(cigar_hits, key=lambda p: p.r_st)
 

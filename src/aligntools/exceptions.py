@@ -44,11 +44,3 @@ class CigarCutError(IndexError, CigarError):
     strings at reference points.
     """
     pass
-
-
-class EmptyCigarHitListError(ValueError, CigarError):
-    """
-    Exception raised when an empty list of CIGAR hits
-    is given for processing.
-    """
-    pass
