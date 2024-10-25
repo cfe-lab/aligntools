@@ -12,6 +12,7 @@ import re
 from aligntools.coordinate_mapping import CoordinateMapping
 from aligntools.cigar_actions import CigarActions
 from aligntools.cigar import Cigar
+from aligntools.comparable import Comparable
 import aligntools.exceptions as ex
 
 
@@ -397,7 +398,7 @@ class CigarHit:
 
 
 def drop_overlapping_cigar_hits(cigar_hits: Iterable[CigarHit],
-                                quality: Callable[[CigarHit], int]) \
+                                quality: Callable[[CigarHit], Comparable]) \
         -> Iterator[CigarHit]:
     """
     Filter overlapping CigarHit objects based on a quality criterion.
