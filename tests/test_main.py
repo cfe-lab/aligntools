@@ -6,6 +6,7 @@ from typing import Mapping, Union
 from aligntools import Cigar, CigarHit, \
     connect_nonoverlapping_cigar_hits, drop_overlapping_cigar_hits, \
     CigarActions, FrozenIntDict, CoordinateMapping
+from aligntools.cigar_actions import OP_MAPPING
 import aligntools.exceptions as ex
 
 
@@ -1152,3 +1153,26 @@ def test_parse_cigar_hit_valid(hit_str, expected):
 def test_parse_cigar_hit_invalid(hit_str):
     with pytest.raises(ex.ParseError):
         CigarHit.parse(hit_str)
+
+
+@pytest.mark.parametrize("action", list(CigarActions))
+def test_cigar_actions_str(action):
+    assert str(action) in OP_MAPPING
+
+
+@pytest.mark.parametrize("action", list(CigarActions))
+def test_cigar_actions_repr(action):
+    assert action == eval(repr(action))
+
+
+@pytest.mark.parametrize("action", list(CigarActions))
+def test_cigar_actions_parse(action):
+    assert action == CigarActions.parse(str(action))
+
+
+@pytest.mark.parametrize("action", list(CigarActions))
+def test_cigar_actions_relax(action):
+    relaxed: CigarActions = action.relax()
+    assert relaxed in (x for x in CigarActions
+                       if x not in (CigarActions.SEQ_MATCH,
+                                    CigarActions.MISMATCH))
