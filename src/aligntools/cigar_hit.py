@@ -3,7 +3,7 @@ Module for handling CIGAR hits.
 """
 
 from math import ceil, floor
-from typing import Tuple, Iterable, Optional, List, Sequence, Iterator
+from typing import Tuple, Iterable, Optional, List, Iterator
 from dataclasses import dataclass
 from functools import cached_property, reduce
 from fractions import Fraction
@@ -396,7 +396,7 @@ class CigarHit:
             % (str(self.cigar), self.q_st, self.q_ei, self.r_st, self.r_ei)
 
 
-def connect_nonoverlapping_cigar_hits(cigar_hits: Sequence[CigarHit]) \
+def connect_nonoverlapping_cigar_hits(cigar_hits: Iterable[CigarHit]) \
         -> Iterator[CigarHit]:
     """
     This function exists to deal with the fact that mappy does not
