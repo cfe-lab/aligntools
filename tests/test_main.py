@@ -4,7 +4,7 @@ import re
 from typing import Mapping, Union
 
 from aligntools import Cigar, CigarHit, \
-    connect_cigar_hits, CigarActions, \
+    connect_nonoverlapping_cigar_hits, CigarActions, \
     FrozenIntDict, CoordinateMapping
 import aligntools.exceptions as ex
 
@@ -779,19 +779,18 @@ def test_invalid_from_msa_due_to_length_mismatch(reference, query):
 connect_cigar_hits_cases = [
     # Non-overlapping hits should be connected with deletions/insertions
     (["4M@1->1", "4M@8->10"], ["4M5D3I4M@1->1"]),
-    # Overlapping hits should ignore later ones
-    (["4M@1->1", "5M@3->3"], ["4M@1->1"]),
+    # Overlapping hits should not ignore later ones
+    (["4M@1->1", "5M@3->3"], ["4M@1->1", "5M@3->3"]),
     # Touching hits should be simply concatenated
     (["4M@1->1", "4M@5->5"], ["8M@1->1"]),
     # Hits that touch at only one boundary should combine just fine
     (["3M@1->1", "6M@6->4"], ["3M2I6M@1->1"]),
-    # Hits that are subsets of earlier hits should be ignored
-    (["8M@1->1", "3M@3->3"], ["8M@1->1"]),
+    # Hits that are subsets of earlier hits should not be ignored
+    (["8M@1->1", "3M@3->3"], ["8M@1->1", "3M@3->3"]),
     # Hits that are out of order should be connected if no overlap
     (["3M@6->10", "3M@1->1"], ["3M6D2I3M@1->1"]),
-    # Hits that overlap by a single base should prioritize
-    # the first hit and not combine
-    (["3M@1->1", "3M@3->3"], ["3M@1->1"]),
+    # Hits that overlap by a single base should also not be discarded.
+    (["3M@1->1", "3M@3->3"], ["3M@1->1", "3M@3->3"]),
     # Non-overlapping hits in the query space
     # but overlapping in reference space
     (["5M@1->1", "1M@10->3"], ['5M@1->1', '1M@10->3']),
@@ -813,10 +812,10 @@ def test_connect_cigar_hits(hits, expected_result):
 
     if isinstance(expected_result, Exception):
         with pytest.raises(type(expected_result)):
-            list(connect_cigar_hits(hits))
+            list(connect_nonoverlapping_cigar_hits(hits))
     else:
         expected_result = list(map(parsed_hit, expected_result))
-        result = list(connect_cigar_hits(hits))
+        result = list(connect_nonoverlapping_cigar_hits(hits))
         assert expected_result == result
 
 

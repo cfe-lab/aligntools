@@ -2,7 +2,7 @@
 from aligntools.exceptions import CigarError, CoersionError, \
     ParseError, InvalidOperationError, CigarHitRangeError, \
     CigarConnectError, EmptyCigarHitListError
-from .cigar_hit import CigarHit, connect_cigar_hits
+from .cigar_hit import CigarHit, connect_nonoverlapping_cigar_hits
 from .coordinate_mapping import CoordinateMapping
 from .int_dict import FrozenIntDict
 from .cigar_actions import CigarActions
@@ -19,7 +19,7 @@ __all__ = [
     'CigarActions',
     'Cigar',
     'CigarHit',
-    'connect_cigar_hits',
+    'connect_nonoverlapping_cigar_hits',
     'CoordinateMapping',
     'FrozenIntDict',
 ]

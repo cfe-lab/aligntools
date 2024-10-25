@@ -396,34 +396,22 @@ class CigarHit:
             % (str(self.cigar), self.q_st, self.q_ei, self.r_st, self.r_ei)
 
 
-def connect_cigar_hits(cigar_hits: Sequence[CigarHit]) -> Iterator[CigarHit]:
+def connect_nonoverlapping_cigar_hits(cigar_hits: Sequence[CigarHit]) \
+        -> Iterator[CigarHit]:
     """
     This function exists to deal with the fact that mappy does not
     always connect big gaps, and returns surrounding parts as two
     separate alignment hits.
 
     For those cases we simply connect all the parts that do not overlap.
-
-    Order of cigar_hits matters because we ignore alignments
-    that overlap (in query space) with previously found alignments.
     """
 
     if len(cigar_hits) == 0:
         raise ex.EmptyCigarHitListError(
             "Expected a non-empty list of cigar hits.")
 
-    accumulator: List[CigarHit] = []
-
-    # Collect non-overlapping parts.
-    # Earlier matches have priority over ones that come after.
-    for hit in cigar_hits:
-        if any(earlier.overlaps_in_query(hit) for earlier in accumulator):
-            continue
-
-        accumulator.append(hit)
-
     # Sort by interval start positions.
-    sorted_parts = sorted(accumulator, key=lambda p: p.r_st)
+    sorted_parts = sorted(cigar_hits, key=lambda p: p.r_st)
 
     # Segregate independent matches.
     sorted_groups: List[List[CigarHit]] = []
@@ -431,7 +419,9 @@ def connect_cigar_hits(cigar_hits: Sequence[CigarHit]) -> Iterator[CigarHit]:
     def find_group(phit: CigarHit) -> None:
         for group in sorted_groups:
             if phit.q_st > group[-1].q_ei and \
-               all(not phit.overlaps_in_reference(other) for other in group):
+               all(not phit.overlaps_in_reference(other) and
+                   not phit.overlaps_in_query(other)
+                   for other in group):
                 group.append(phit)
                 return
 
