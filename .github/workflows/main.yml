@@ -1,11 +1,6 @@
 
 name: main
-
-on:
-  push:
-    branches: [ "master", "devel" ]
-  pull_request
-
+on: push
 jobs:
   quicktest:
     runs-on: ubuntu-latest
