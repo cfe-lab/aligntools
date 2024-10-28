@@ -41,7 +41,7 @@ class CigarActions(IntEnum):
     def parse(value: str) -> 'CigarActions':
         ret = OP_MAPPING.get(value)
         if ret is None:
-            raise ex.ParseError(f"Invalid action: {value}")
+            raise ex.ParseError(f"Invalid action: {value!r}.")
         return ret
 
     def __str__(self) -> str:
