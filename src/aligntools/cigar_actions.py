@@ -48,7 +48,7 @@ class CigarActions(IntEnum):
         return OP_MAPPING_REV[self]
 
     def __repr__(self) -> str:
-        return super().__str__()
+        return OP_REPR[self]
 
     def relax(self) -> 'CigarActions':
         if self == CigarActions.SEQ_MATCH:
@@ -69,6 +69,19 @@ OP_MAPPING = {
     'P': CigarActions.PADDING,
     '=': CigarActions.SEQ_MATCH,
     'X': CigarActions.MISMATCH,
+}
+
+
+OP_REPR = {
+    CigarActions.MATCH: 'CigarActions.MATCH',
+    CigarActions.INSERT: 'CigarActions.INSERT',
+    CigarActions.DELETE: 'CigarActions.DELETE',
+    CigarActions.SKIPPED: 'CigarActions.SKIPPED',
+    CigarActions.SOFT_CLIPPED: 'CigarActions.SOFT_CLIPPED',
+    CigarActions.HARD_CLIPPED: 'CigarActions.HARD_CLIPPED',
+    CigarActions.PADDING: 'CigarActions.PADDING',
+    CigarActions.SEQ_MATCH: 'CigarActions.SEQ_MATCH',
+    CigarActions.MISMATCH: 'CigarActions.MISMATCH',
 }
 
 
