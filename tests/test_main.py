@@ -1024,7 +1024,7 @@ def test_coordinate_mapping_eq():
     assert mapping_1 != mapping_4
 
 
-def test_coordinate_mapping_repr():
+def test_coordinate_mapping_str():
     mapping_1 = CoordinateMapping()
     mapping_1.extend(2, 3, 0)
     mapping_1.extend(3, 4, 1)
@@ -1048,17 +1048,17 @@ def test_coordinate_mapping_repr():
     mapping_5.extend(4, None, 4)
     mapping_5.extend(5, 5, 5)
 
-    assert repr(mapping_1) \
-        == repr(mapping_2) \
+    assert str(mapping_1) \
+        == str(mapping_2) \
         == "CoordinateMapping({ 2: 0, 3: 1 }, { 3: 0, 4: 1 })"
 
-    assert repr(mapping_3) \
+    assert str(mapping_3) \
         == "CoordinateMapping({ 2: 0, 3: 1 }, { 3: 0, 5: 1 })"
 
-    assert repr(mapping_4) \
+    assert str(mapping_4) \
         == "CoordinateMapping({ 2: 1, 3: 2 }, { 3: 1, 4: 2 })"
 
-    assert repr(mapping_5) \
+    assert str(mapping_5) \
         == "CoordinateMapping(" \
         "{ 2: 1, 3: 2, 4: 4, 5: 5, None: 3 }" \
         ", " \
