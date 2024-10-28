@@ -1,20 +1,19 @@
 
 name: main
-
-on:
-  push:
-    branches: [ "master", "devel" ]
-  pull_request:
-    branches: [ "master", "devel" ]
-
+on: push
 jobs:
   quicktest:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y python3 python3-pip
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Run build
         run: pip3 install .[test]
