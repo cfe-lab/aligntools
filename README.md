@@ -1,7 +1,7 @@
 
 [![codecov](https://codecov.io/gh/cfe-lab/aligntools/branch/master/graph/badge.svg)](https://codecov.io/gh/cfe-lab/aligntools)
 [![types - Mypy](https://img.shields.io/badge/types-Mypy-blue.svg)](https://github.com/python/mypy)
-[![flake8 checked](https://img.shields.io/badge/flake8-checked-blueviolet.svg)](https://github.com/PyCQA/flake8)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![License - AGPL3](https://img.shields.io/badge/license-AGPLv3-blue)](https://spdx.org/licenses/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/cfe-lab/aligntools/pulls)
 
@@ -204,7 +204,7 @@ git checkout -b $YOUR_CHANGE_NAME
 - Running the validation, like this:
 
 ```shell
-pytest && flake8 && bandit
+pytest && ruff check && bandit
 ```
 
 - Pushing the changes back to GitHub servers:
