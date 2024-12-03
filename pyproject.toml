@@ -7,7 +7,7 @@ name = "aligntools"
 version = "1.2.1"
 description = "A Python library for manipulation of CIGAR, MSA, and other alignment formats."
 readme = "README.md"
-license = "GPL-3.0"
+license = "AGPL-3.0"
 authors = [
     { name = "British Columbia Centre for Excellence in HIV/AIDS", email = "vmysak@bccfe.ca" },
 ]
