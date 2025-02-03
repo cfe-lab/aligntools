@@ -4,7 +4,7 @@ Module for handling CIGAR strings.
 
 import re
 import collections.abc
-from typing import Tuple, Iterable, Optional, Union, NoReturn
+from typing import Tuple, Iterable, Optional, Union, NoReturn, Sequence
 from functools import cached_property
 
 from aligntools.coordinate_mapping import CoordinateMapping
@@ -229,7 +229,8 @@ class Cigar:
         new = [(count, action.relax()) for (count, action) in self._data]
         return Cigar(new)
 
-    def to_msa(self, reference_seq: str, query_seq: str) -> Tuple[str, str]:
+    def to_msa(self, reference_seq: Sequence[str], query_seq: Sequence[str]
+               ) -> Tuple[str, str]:
         """
         Constructs a multiple sequence alignment (MSA) representation
         for this Cigar, using the original reference and query
@@ -265,7 +266,8 @@ class Cigar:
         return reference_msa, query_msa
 
     @staticmethod
-    def from_msa(reference: str, query: str) -> 'Cigar':
+    def from_msa(reference: Sequence[object], query: Sequence[object]
+                 ) -> 'Cigar':
         """
         Converts a Multiple Sequence Alignment (MSA) of a reference
         and a query sequence into a CIGAR object. Alignments are

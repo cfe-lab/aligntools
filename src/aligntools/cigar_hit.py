@@ -3,7 +3,8 @@ Module for handling CIGAR hits.
 """
 
 from math import ceil, floor
-from typing import Tuple, Iterable, Optional, List, Iterator, Callable
+from typing import Tuple, Iterable, Optional, List, Iterator, \
+    Callable, Sequence
 from dataclasses import dataclass
 from functools import cached_property, reduce
 from fractions import Fraction
@@ -328,7 +329,8 @@ class CigarHit:
 
         return self.cigar.coordinate_mapping.translate(self.r_st, self.q_st)
 
-    def to_msa(self, reference_seq: str, query_seq: str) -> Tuple[str, str]:
+    def to_msa(self, reference_seq: Sequence[str], query_seq: Sequence[str]
+               ) -> Tuple[str, str]:
         """
         Constructs a multiple sequence alignment (MSA) representation
         for this CigarHit, using the original reference and query
