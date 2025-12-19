@@ -400,11 +400,11 @@ class CigarHit:
         cigar: Cigar = Cigar.coerce(cigar_str)
         return CigarHit(cigar, r_st, r_ei, q_st, q_ei)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'CigarHit(%r, r_st=%r, r_ei=%r, q_st=%r, q_ei=%r)' \
             % (self.cigar, self.r_st, self.r_ei, self.q_st, self.q_ei)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '%s@[%d,%d]->[%d,%d]' \
             % (str(self.cigar), self.q_st, self.q_ei, self.r_st, self.r_ei)
 
