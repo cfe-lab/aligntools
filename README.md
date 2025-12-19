@@ -183,38 +183,6 @@ print("Right (trimmed) Hit:", trimmed_hit)
 
 To use `aligntools` for your projects, simply run `pip install aligntools`.
 
-## Contributing
-
-We welcome contributions to the `aligntools` project! Whether you want to fix a bug, add new features, or improve documentation, feel free to fork the repository, make your changes, and submit a pull request. We also welcome issues and suggestions.
-
-To make changes to `aligntools`:
-
-- Fork the repository. This is done through GitHub UI, initiated by the "Fork" button.
-- Cloning the repository, like so:
-
-```shell
-# Get the repository sources.
-git clone https://github.com/${YOUR_USERNAME}/aligntools
-cd aligntools
-pip install .[dev,test] # Install all development, and test dependencies.
-git checkout -b $YOUR_CHANGE_NAME
-```
-
-- Editing some files & commiting the results.
-- Running the validation, like this:
-
-```shell
-pytest && ruff check && bandit
-```
-
-- Pushing the changes back to GitHub servers:
-
-```
-git push origin HEAD
-```
-
-- Creating a pull request through GitHub UI. Go to [aligntools repository](https://github.com/cfe-lab/aligntools), and select "Create pull request option".
-
 ## License
 
 This project is licensed under the AGPLv3.0 License. See the COPYING file for details.
