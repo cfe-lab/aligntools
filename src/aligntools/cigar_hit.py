@@ -208,7 +208,7 @@ class CigarHit:
             left = other
             right = self
 
-        combined_cigar = left.cigar + right.cigar
+        combined_cigar = left.cigar.append(right.cigar)
         return CigarHit(cigar=combined_cigar,
                         r_st=left.r_st,
                         r_ei=left.r_st + combined_cigar.ref_length - 1,

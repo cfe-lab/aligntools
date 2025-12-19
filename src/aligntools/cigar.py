@@ -410,7 +410,7 @@ class Cigar:
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Cigar) and self._data == other._data
 
-    def __add__(self, other: 'Cigar') -> 'Cigar':
+    def append(self, other: 'Cigar') -> 'Cigar':
         return Cigar(self._data + other._data)
 
     def __repr__(self):
