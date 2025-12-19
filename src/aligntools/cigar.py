@@ -413,10 +413,10 @@ class Cigar(Hashable):
     def __add__(self, other: 'Cigar') -> 'Cigar':
         return Cigar(self._data + other._data)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'Cigar.parse({str(self)!r})'
 
-    def __str__(self):
+    def __str__(self) -> str:
         """ Inverse of `Cigar.parse` """
         return ''.join('{}{}'.format(num, op) for num, op in self._data)
 
