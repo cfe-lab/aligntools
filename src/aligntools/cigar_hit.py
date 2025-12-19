@@ -3,7 +3,7 @@ Module for handling CIGAR hits.
 """
 
 from math import ceil, floor
-from typing import Tuple, Iterable, Optional, List, Iterator, \
+from typing import Hashable, Tuple, Iterable, Optional, List, Iterator, \
     Callable, Sequence
 from dataclasses import dataclass
 from functools import cached_property, reduce
@@ -28,7 +28,7 @@ parse_expr = re.compile(r'(?P<cigar>.+)@'
 
 
 @dataclass(frozen=True)
-class CigarHit:
+class CigarHit(Hashable):
     """
     This class provides an abstraction over the complex details
     involved in working with sequence alignments expressed as CIGAR
