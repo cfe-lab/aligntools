@@ -3,6 +3,7 @@ Module for handling CIGAR strings.
 """
 
 import re
+import warnings
 import collections.abc
 from typing import Tuple, Iterable, Optional, Union, NoReturn, Sequence
 from functools import cached_property
@@ -412,6 +413,23 @@ class Cigar:
 
     def append(self, other: 'Cigar') -> 'Cigar':
         return Cigar(self._data + other._data)
+
+    def __add__(self, other: 'Cigar') -> 'Cigar':
+        """
+        Deprecated: Use `append()` instead.
+
+        This method is deprecated because the `+` operator suggests
+        commutativity (a + b == b + a), but CIGAR concatenation is
+        order-dependent.
+        """
+        warnings.warn(
+            "Cigar.__add__() is deprecated. Use Cigar.append() instead. "
+            "The + operator suggests commutativity, but CIGAR concatenation "
+            "is order-dependent.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return self.append(other)
 
     def __repr__(self):
         return f'Cigar.parse({str(self)!r})'
