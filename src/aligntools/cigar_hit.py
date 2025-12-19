@@ -117,18 +117,18 @@ class CigarHit:
     def touches_in_query(self, other: 'CigarHit') -> bool:
         """
         Checks if the end of this CigarHit is immediately adjacent to
-        the start of another one.
+        the start of another one or vice versa.
         """
 
-        return self.q_ei + 1 == other.q_st
+        return self.q_ei + 1 == other.q_st or other.q_ei + 1 == self.q_st
 
     def touches_in_reference(self, other: 'CigarHit') -> bool:
         """
         Checks if the end of this CigarHit is immediately adjacent to
-        the start of another one.
+        the start of another one or vice versa.
         """
 
-        return self.r_ei + 1 == other.r_st
+        return self.r_ei + 1 == other.r_st or other.r_ei + 1 == self.r_st
 
     def _gaps(self, is_deletions: bool) -> Iterable['CigarHit']:
         last_query_index = self.q_st
@@ -190,11 +190,20 @@ class CigarHit:
                                        " do not touch in both reference"
                                        " and query coordinates.")
 
-        return CigarHit(cigar=self.cigar + other.cigar,
-                        r_st=self.r_st,
-                        r_ei=other.r_ei,
-                        q_st=self.q_st,
-                        q_ei=other.q_ei)
+        # Sort by reference position first, then by query position
+        if (self.r_st, self.q_st) <= (other.r_st, other.q_st):
+            left = self
+            right = other
+        else:
+            left = other
+            right = self
+
+        combined_cigar = left.cigar + right.cigar
+        return CigarHit(cigar=combined_cigar,
+                        r_st=left.r_st,
+                        r_ei=left.r_st + combined_cigar.ref_length - 1,
+                        q_st=left.q_st,
+                        q_ei=left.q_st + combined_cigar.query_length - 1)
 
     def connect(self, other: 'CigarHit') -> 'CigarHit':
         """

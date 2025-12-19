@@ -613,6 +613,130 @@ def test_cigar_hit_ref_cut_add_associativity(hit, cut_point):
             assert (a + b) + c == a + (b + c)
 
 
+# Test cases for commutativity and associativity treating errors as values
+cigar_hit_addition_test_cases = [
+    # Touching hits (should work in both orders)
+    ("2M@1->1", "2M@3->3"),
+    ("3M@0->0", "2D@3->3"),
+    ("2M@5->5", "3I@7->7"),
+    ("4M@10->10", "2M@14->14"),
+    ("5M@0->0", "3M@5->5"),
+
+    # Non-touching hits (should fail consistently)
+    ("2M@1->1", "2M@5->5"),
+    ("3M@0->0", "3M@10->10"),
+    ("2M@0->0", "2M@10->10"),
+
+    # Touching but misaligned in query/reference (should fail consistently)
+    ("2M@0->0", "2M@5->2"),  # Touch in ref, not in query
+    ("2M@0->0", "2M@2->5"),  # Touch in query, not in ref
+
+    # Complex operations with touching hits
+    ("3M2I@0->0", "2D3M@5->3"),
+    ("5M@1->1", "2D@6->6"),
+    ("2M@0->0", "3D@2->2"),
+    ("3I@0->0", "2M@3->0"),
+]
+def try_add_hits(a: CigarHit, b: CigarHit) -> Union[CigarHit, Exception]:
+    """
+    Try to add two CigarHits, returning either the result or the exception.
+    This allows us to treat errors as values for commutativity testing.
+    """
+    try:
+        return a + b
+    except Exception as e:
+        return e
+
+
+@pytest.mark.parametrize("hit_a_str, hit_b_str", cigar_hit_addition_test_cases)
+def test_cigar_hit_addition_commutativity(hit_a_str, hit_b_str):
+    """
+    Test that CigarHit addition is commutative: a + b == b + a
+    This includes the case where both operations raise the same error.
+    """
+    hit_a = parsed_hit(hit_a_str)
+    hit_b = parsed_hit(hit_b_str)
+
+    result_ab = try_add_hits(hit_a, hit_b)
+    result_ba = try_add_hits(hit_b, hit_a)
+
+    # Check if both are exceptions
+    if isinstance(result_ab, Exception) and isinstance(result_ba, Exception):
+        # Both should raise the same type of exception with the same message
+        assert type(result_ab) == type(result_ba)  # noqa
+        assert str(result_ab) == str(result_ba)
+    # Check if both are successful results
+    elif isinstance(result_ab, CigarHit) and isinstance(result_ba, CigarHit):
+        # Both should produce the same result
+        assert result_ab == result_ba
+    else:
+        # One succeeded and one failed - this violates commutativity
+        pytest.fail(
+            f"Commutativity violated: a + b and b + a produced different outcomes.\n"
+            f"  a + b: {result_ab}\n"
+            f"  b + a: {result_ba}"
+        )
+
+
+@pytest.mark.parametrize(
+    "hit_a_str, hit_b_str, hit_c_str",
+    [
+        # Three touching hits in sequence
+        ("2M@0->0", "2M@2->2", "2M@4->4"),
+        ("3M@1->1", "2D@4->4", "3M@4->6"),
+        ("2M@5->5", "3I@7->7", "2M@10->7"),
+
+        # Three non-touching hits (all should fail)
+        ("2M@0->0", "2M@5->5", "2M@10->10"),
+
+        # Mixed: some touching, some not
+        ("2M@0->0", "2M@2->2", "2M@10->10"),
+    ]
+)
+def test_cigar_hit_addition_associativity_comprehensive(
+    hit_a_str, hit_b_str, hit_c_str
+):
+    """
+    Test that CigarHit addition is associative: (a + b) + c == a + (b + c)
+    This includes the case where both operations raise the same error.
+    """
+    hit_a = parsed_hit(hit_a_str)
+    hit_b = parsed_hit(hit_b_str)
+    hit_c = parsed_hit(hit_c_str)
+
+    # Compute (a + b) + c
+    ab = try_add_hits(hit_a, hit_b)
+    if isinstance(ab, CigarHit):
+        left_result = try_add_hits(ab, hit_c)
+    else:
+        left_result = ab  # ab failed, so (a + b) + c is the same error
+
+    # Compute a + (b + c)
+    bc = try_add_hits(hit_b, hit_c)
+    if isinstance(bc, CigarHit):
+        right_result = try_add_hits(hit_a, bc)
+    else:
+        right_result = bc  # bc failed, so a + (b + c) is the same error
+
+    # Compare results
+    if isinstance(left_result, Exception) and isinstance(right_result, Exception):
+        # Both should raise the same type of exception
+        # Note: We don't check message equality here because the error
+        # might occur at different stages
+        assert type(left_result) == type(right_result)  # noqa
+    elif isinstance(left_result, CigarHit) and isinstance(right_result, CigarHit):
+        # Both should produce the same result
+        assert left_result == right_result
+    else:
+        # One succeeded and one failed - this violates associativity
+        pytest.fail(
+            f"Associativity violated: (a + b) + c and a + (b + c) "
+            f"produced different outcomes.\n"
+            f"  (a + b) + c: {left_result}\n"
+            f"  a + (b + c): {right_result}"
+        )
+
+
 @pytest.mark.parametrize(
     "hit", [x[0] for x in cigar_hit_ref_cut_cases
             if not isinstance(x[2], Exception)]
