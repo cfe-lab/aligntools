@@ -190,6 +190,16 @@ class CigarHit:
                                        " do not touch in both reference"
                                        " and query coordinates.")
 
+        # Determine order in reference and query spaces
+        ref_order = (self.r_st, self.r_ei) <= (other.r_st, other.r_ei)
+        query_order = (self.q_st, self.q_ei) <= (other.q_st, other.q_ei)
+
+        # Hits must be in the same order in both spaces
+        if ref_order != query_order:
+            raise ex.CigarConnectError("Cannot combine CIGAR hits that"
+                                       " are in opposite orders in reference"
+                                       " and query coordinates.")
+
         # Sort by reference position first, then by query position
         if (self.r_st, self.q_st) <= (other.r_st, other.q_st):
             left = self
