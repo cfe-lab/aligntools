@@ -2,14 +2,16 @@
 from typing import Optional, AbstractSet, Mapping, \
     Dict, Iterator, MutableSet
 
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 
 
 class FrozenIntDict(ABC, Mapping[int, int]):
-    @abstractproperty
+    @property
+    @abstractmethod
     def domain(self) -> AbstractSet[int]: ...
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def codomain(self) -> AbstractSet[int]: ...
 
     @abstractmethod
