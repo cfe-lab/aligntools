@@ -190,30 +190,17 @@ class CigarHit:
                                        " do not touch in both reference"
                                        " and query coordinates.")
 
-        # Determine order in reference and query spaces
-        ref_order = (self.r_st, self.r_ei) <= (other.r_st, other.r_ei)
-        query_order = (self.q_st, self.q_ei) <= (other.q_st, other.q_ei)
-
-        # Hits must be in the same order in both spaces
-        if ref_order != query_order:
-            raise ex.CigarConnectError("Cannot combine CIGAR hits that"
-                                       " are in opposite orders in reference"
-                                       " and query coordinates.")
-
         # Sort by reference position first, then by query position
-        if (self.r_st, self.q_st) <= (other.r_st, other.q_st):
-            left = self
-            right = other
-        else:
-            left = other
-            right = self
+        if (self.r_st, self.q_st) > (other.r_st, other.q_st):
+            raise ex.CigarConnectError("Combined CIGAR hits must be"
+                                       " ordered, but they are not.")
 
-        combined_cigar = left.cigar + right.cigar
+        combined_cigar = self.cigar + other.cigar
         return CigarHit(cigar=combined_cigar,
-                        r_st=left.r_st,
-                        r_ei=left.r_st + combined_cigar.ref_length - 1,
-                        q_st=left.q_st,
-                        q_ei=left.q_st + combined_cigar.query_length - 1)
+                        r_st=self.r_st,
+                        r_ei=self.r_st + combined_cigar.ref_length - 1,
+                        q_st=self.q_st,
+                        q_ei=self.q_st + combined_cigar.query_length - 1)
 
     def connect(self, other: 'CigarHit') -> 'CigarHit':
         """
