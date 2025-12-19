@@ -636,6 +636,11 @@ cigar_hit_addition_test_cases = [
     ("5M@1->1", "2D@6->6"),
     ("2M@0->0", "3D@2->2"),
     ("3I@0->0", "2M@3->0"),
+
+    # Empty hits
+    ("@1->1", "2M@1->1"),
+    ("2M@5->5", "@7->7"),
+    ("@0->0", "@0->0"),
 ]
 def try_add_hits(a: CigarHit, b: CigarHit) -> Union[CigarHit, Exception]:
     """
