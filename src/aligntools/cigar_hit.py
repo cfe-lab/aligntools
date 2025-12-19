@@ -408,6 +408,9 @@ class CigarHit:
         return '%s@[%d,%d]->[%d,%d]' \
             % (str(self.cigar), self.q_st, self.q_ei, self.r_st, self.r_ei)
 
+    def __hash__(self) -> int:
+        return hash((self.cigar, self.r_st, self.q_st))
+
 
 def drop_overlapping_cigar_hits(cigar_hits: Iterable[CigarHit],
                                 quality: Callable[[CigarHit], Comparable]) \
