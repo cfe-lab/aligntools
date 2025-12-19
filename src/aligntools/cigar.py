@@ -419,3 +419,6 @@ class Cigar:
     def __str__(self):
         """ Inverse of `Cigar.parse` """
         return ''.join('{}{}'.format(num, op) for num, op in self._data)
+
+    def __hash__(self) -> int:
+        return hash(self._data)
