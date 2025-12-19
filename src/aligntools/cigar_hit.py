@@ -225,6 +225,10 @@ class CigarHit:
             raise ex.CigarConnectError(
                 "Cannot combine overlapping CIGAR hits.")
 
+        if (self.r_st, self.q_st) > (other.r_st, other.q_st):
+            raise ex.CigarConnectError("Combined CIGAR hits must be"
+                                       " ordered, but they are not.")
+
         filler = CigarHit.from_default_alignment(self.r_ei + 1, other.r_st - 1,
                                                  self.q_ei + 1, other.q_st - 1)
         return self + filler + other
