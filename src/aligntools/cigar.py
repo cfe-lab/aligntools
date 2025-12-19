@@ -4,7 +4,7 @@ Module for handling CIGAR strings.
 
 import re
 import collections.abc
-from typing import Tuple, Iterable, Optional, Union, NoReturn, Sequence
+from typing import Hashable, Tuple, Iterable, Optional, Union, NoReturn, Sequence
 from functools import cached_property
 
 from aligntools.coordinate_mapping import CoordinateMapping
@@ -15,7 +15,7 @@ import aligntools.exceptions as ex
 CigarLike = Union['Cigar', str, Iterable[Tuple[int, CigarActions]]]
 
 
-class Cigar:
+class Cigar(Hashable):
     """
     Represents an alignment between a query sequence and a reference
     sequence using the Compact Idiosyncratic Gapped Alignment Report
