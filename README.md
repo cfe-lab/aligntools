@@ -28,7 +28,7 @@ You can easily parse a CIGAR string and perform various operations using the `Ci
 from aligntools import Cigar
 
 # Parse a CIGAR string
-cigar = Cigar.coerce("10M1I5D5M")
+cigar = Cigar.parse("10M1I5D5M")
 
 # Enumerate operations
 for operation in cigar.iterate_operations():
