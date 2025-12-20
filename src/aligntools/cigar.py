@@ -407,11 +407,14 @@ class Cigar(Hashable):
         if last_item:
             yield last_item[0], last_item[1]
 
+    def append(self, other: 'Cigar') -> 'Cigar':
+        return Cigar(self._data + other._data)
+
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Cigar) and self._data == other._data
 
     def __add__(self, other: 'Cigar') -> 'Cigar':
-        return Cigar(self._data + other._data)
+        return self.append(other)
 
     def __repr__(self) -> str:
         return f'Cigar.parse({str(self)!r})'

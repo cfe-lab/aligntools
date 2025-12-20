@@ -195,7 +195,7 @@ class CigarHit(Hashable):
             raise ex.CigarAddError("Combined CIGAR hits must be"
                                    " ordered, but they are not.")
 
-        combined_cigar = self.cigar + other.cigar
+        combined_cigar = self.cigar.append(other.cigar)
         return CigarHit(cigar=combined_cigar,
                         r_st=self.r_st,
                         r_ei=self.r_st + combined_cigar.ref_length - 1,
