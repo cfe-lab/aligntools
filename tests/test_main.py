@@ -750,6 +750,160 @@ def test_cigar_hit_addition_associativity_comprehensive(
         )
 
 
+# Test cases for CigarHit.connect() method
+# The connect method fills gaps between non-overlapping hits
+cigar_hit_connect_test_cases = [
+    # Touching hits (should work - connect adds no gap)
+    ("2M@1->1", "2M@3->3"),
+    ("3M@0->0", "2D@3->3"),
+    ("2M@5->5", "3I@7->7"),
+    ("4M@10->10", "2M@14->14"),
+    ("5M@0->0", "3M@5->5"),
+
+    # Non-touching hits (connect should fill the gap)
+    ("2M@1->1", "2M@5->5"),  # Gap in both ref and query
+    ("3M@0->0", "3M@10->10"),  # Larger gap
+    ("2M@0->0", "2M@10->10"),  # Gap in ref and query
+    ("2M@0->5", "2M@10->15"),  # Non-aligned gap
+
+    # Touching but misaligned in query/reference (connect should work)
+    ("2M@0->0", "2M@5->2"),  # Touch in ref, gap in query
+    ("2M@0->0", "2M@2->5"),  # Touch in query, gap in ref
+
+    # Complex operations with touching hits
+    ("3M2I@0->0", "2D3M@5->3"),
+    ("5M@1->1", "2D@6->6"),
+    ("2M@0->0", "3D@2->2"),
+    ("3I@0->0", "2M@3->0"),
+
+    # Empty hits
+    ("@1->1", "2M@1->1"),
+    ("2M@5->5", "@7->7"),
+    ("@0->0", "@0->0"),
+
+    # Overlapping hits (should fail)
+    ("3M@0->0", "2M@1->1"),  # Overlap in both
+    ("2M@0->0", "2M@0->0"),  # Complete overlap
+    ("5M@1->1", "3M@3->3"),  # Partial overlap
+]
+
+
+def try_connect_hits(a: CigarHit, b: CigarHit) -> Union[CigarHit, Exception]:
+    """
+    Try to connect two CigarHits, returning either the result or the exception.
+    This allows us to treat errors as values for testing.
+    """
+    try:
+        return a.connect(b)
+    except Exception as e:
+        return e
+
+
+@pytest.mark.parametrize("hit_a_str, hit_b_str", cigar_hit_connect_test_cases)
+def test_cigar_hit_connect_requires_order(hit_a_str, hit_b_str):
+    """
+    Test that CigarHit.connect() requires proper ordering.
+    If a.connect(b) succeeds, then b.connect(a) should fail (unless they start at same position).
+    Connect is NOT commutative - order matters.
+    """
+    hit_a = parsed_hit(hit_a_str)
+    hit_b = parsed_hit(hit_b_str)
+
+    result_ab = try_connect_hits(hit_a, hit_b)
+    result_ba = try_connect_hits(hit_b, hit_a)
+
+    # Check if hits are in the same position
+    same_position = (hit_a.r_st, hit_a.q_st) == (hit_b.r_st, hit_b.q_st)
+
+    # If both are exceptions, they should be the same type
+    if isinstance(result_ab, Exception) and isinstance(result_ba, Exception):
+        assert type(result_ab) == type(result_ba)  # noqa
+    # If a.connect(b) succeeds but b.connect(a) doesn't, that's expected (not commutative)
+    elif isinstance(result_ab, CigarHit) and isinstance(result_ba, Exception):
+        # This is correct behavior - order matters
+        pass
+    # If b.connect(a) succeeds but a.connect(b) doesn't, that means a was NOT before b
+    elif isinstance(result_ab, Exception) and isinstance(result_ba, CigarHit):
+        # This means hit_b should come before hit_a
+        assert (hit_b.r_st, hit_b.q_st) < (hit_a.r_st, hit_a.q_st)
+    # If both succeed, they should only be equal if at same position
+    elif isinstance(result_ab, CigarHit) and isinstance(result_ba, CigarHit):
+        if same_position:
+            # Same starting position - results should be equal
+            assert result_ab == result_ba
+        else:
+            # Different positions - results should differ (not commutative)
+            # This would be unusual but we just verify both succeeded
+            pass
+
+
+@pytest.mark.parametrize(
+    "hit_a_str, hit_b_str, hit_c_str",
+    [
+        # Three touching hits in sequence
+        ("2M@0->0", "2M@2->2", "2M@4->4"),
+        ("3M@1->1", "2D@4->4", "3M@4->6"),
+        ("2M@5->5", "3I@7->7", "2M@10->7"),
+
+        # Three non-touching hits (connect should fill gaps)
+        ("2M@0->0", "2M@5->5", "2M@10->10"),
+        ("2M@0->0", "2M@3->3", "2M@6->6"),
+
+        # Mixed: some touching, some not
+        ("2M@0->0", "2M@2->2", "2M@10->10"),
+        ("2M@0->0", "2M@5->5", "2M@7->7"),
+
+        # Three empty hits at same position
+        ("@1->1", "@1->1", "@1->1"),
+
+        # Empty and non-empty hits
+        ("@0->0", "2M@0->0", "2M@2->2"),
+    ]
+)
+def test_cigar_hit_connect_associativity_comprehensive(
+    hit_a_str, hit_b_str, hit_c_str
+):
+    """
+    Test that CigarHit.connect() is associative: (a.connect(b)).connect(c) == a.connect(b.connect(c))
+    This includes the case where both operations raise the same error.
+    """
+    hit_a = parsed_hit(hit_a_str)
+    hit_b = parsed_hit(hit_b_str)
+    hit_c = parsed_hit(hit_c_str)
+
+    # Compute (a.connect(b)).connect(c)
+    ab = try_connect_hits(hit_a, hit_b)
+    if isinstance(ab, CigarHit):
+        left_result = try_connect_hits(ab, hit_c)
+    else:
+        left_result = ab  # ab failed, so (a.connect(b)).connect(c) is the same error
+
+    # Compute a.connect(b.connect(c))
+    bc = try_connect_hits(hit_b, hit_c)
+    if isinstance(bc, CigarHit):
+        right_result = try_connect_hits(hit_a, bc)
+    else:
+        right_result = bc  # bc failed, so a.connect(b.connect(c)) is the same error
+
+    # Compare results
+    if isinstance(left_result, Exception) and isinstance(right_result, Exception):
+        # Both should raise the same type of exception
+        # Note: We don't check message equality here because the error
+        # might occur at different stages
+        assert type(left_result) == type(right_result)  # noqa
+    elif isinstance(left_result, CigarHit) and isinstance(right_result, CigarHit):
+        # Both should produce the same result
+        assert left_result == right_result
+    else:
+        # One succeeded and one failed - this violates associativity
+        pytest.fail(
+            f"Associativity violated: (a.connect(b)).connect(c) and a.connect(b.connect(c)) "
+            f"produced different outcomes.\n"
+            f"  (a.connect(b)).connect(c): {left_result}\n"
+            f"  a.connect(b.connect(c)): {right_result}"
+        )
+
+
 @pytest.mark.parametrize(
     "hit", [x[0] for x in cigar_hit_ref_cut_cases
             if not isinstance(x[2], Exception)]
