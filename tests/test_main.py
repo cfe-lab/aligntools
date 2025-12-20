@@ -904,6 +904,101 @@ def test_cigar_hit_connect_associativity_comprehensive(
         )
 
 
+# Test cases for Cigar monoid properties
+# A monoid requires: 1) associativity, 2) identity element
+cigar_test_cases = [
+    "",           # Empty (identity)
+    "2M",
+    "3M2I",
+    "5D",
+    "2M3D4I",
+    "10M",
+    "2I3M2D",
+    "1M1D1I",
+    "5M2D3M",
+]
+
+
+@pytest.mark.parametrize(
+    "cigar_a_str, cigar_b_str, cigar_c_str",
+    [
+        # Various combinations
+        ("2M", "3M", "4M"),
+        ("2M3D", "4I", "5M"),
+        ("", "2M", "3D"),  # With identity
+        ("3M", "", "2D"),  # With identity
+        ("2M", "3M", ""),  # With identity
+        ("", "", "2M"),    # Multiple identities
+        ("5M", "", ""),    # Multiple identities
+        ("", "3M2D", "4I1M"),
+        ("2M3I", "5D", "1M"),
+        ("1M1D1I", "2M", "3D"),
+    ]
+)
+def test_cigar_append_associativity(cigar_a_str, cigar_b_str, cigar_c_str):
+    """
+    Test that Cigar.append() is associative: (a + b) + c == a + (b + c)
+    This is a required property for a monoid.
+    """
+    cigar_a = Cigar.coerce(cigar_a_str)
+    cigar_b = Cigar.coerce(cigar_b_str)
+    cigar_c = Cigar.coerce(cigar_c_str)
+
+    # Compute (a+b)+c)
+    ab = cigar_a + cigar_b
+    left_result = ab + cigar_c
+
+    # Compute a+(b+c)
+    bc = cigar_b + cigar_c
+    right_result = cigar_a + bc
+
+    # Both should produce the same result
+    assert left_result == right_result, (
+        f"Associativity violated: (a + b) + c != a + (b + c)\n"
+        f"  a={cigar_a_str!r}, b={cigar_b_str!r}, c={cigar_c_str!r}\n"
+        f"  (a + b) + c = {str(left_result)!r}\n"
+        f"  a + (b + c) = {str(right_result)!r}"
+    )
+
+
+@pytest.mark.parametrize("cigar_str", cigar_test_cases)
+def test_cigar_left_identity(cigar_str):
+    """
+    Test that the empty Cigar acts as a left identity: empty + a == a
+    This is a required property for a monoid.
+    """
+    cigar = Cigar.coerce(cigar_str)
+    empty = Cigar.coerce("")
+
+    result = empty + cigar
+
+    assert result == cigar, (
+        f"Left identity violated: empty + a != a\n"
+        f"  a = {cigar_str!r}\n"
+        f"  empty + a = {str(result)!r}\n"
+        f"  a = {str(cigar)!r}"
+    )
+
+
+@pytest.mark.parametrize("cigar_str", cigar_test_cases)
+def test_cigar_right_identity(cigar_str):
+    """
+    Test that the empty Cigar acts as a right identity: a + empty == a
+    This is a required property for a monoid.
+    """
+    cigar = Cigar.coerce(cigar_str)
+    empty = Cigar.coerce("")
+
+    result = cigar + empty
+
+    assert result == cigar, (
+        f"Right identity violated: a + empty != a\n"
+        f"  a = {cigar_str!r}\n"
+        f"  a + empty = {str(result)!r}\n"
+        f"  a = {str(cigar)!r}"
+    )
+
+
 @pytest.mark.parametrize(
     "hit", [x[0] for x in cigar_hit_ref_cut_cases
             if not isinstance(x[2], Exception)]
