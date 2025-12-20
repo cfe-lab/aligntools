@@ -177,9 +177,10 @@ class CigarHit(Hashable):
     def insertions(self) -> Iterable['CigarHit']:
         return self._gaps(is_deletions=False)
 
-    def __add__(self, other: 'CigarHit') -> 'CigarHit':
+    def append(self, other: 'CigarHit') -> 'CigarHit':
         """
         Only adds CigarHits that are touching.
+        Order matters -- `self` comes before `other`.
         The addition is simply a concatenation of two Cigar strings,
         and adjustment of hit coordinates.
         """
@@ -399,6 +400,9 @@ class CigarHit(Hashable):
 
         cigar: Cigar = Cigar.coerce(cigar_str)
         return CigarHit(cigar, r_st, r_ei, q_st, q_ei)
+
+    def __add__(self, other: 'CigarHit') -> 'CigarHit':
+        return self.append(other)
 
     def __repr__(self) -> str:
         return 'CigarHit(%r, r_st=%r, r_ei=%r, q_st=%r, q_ei=%r)' \
