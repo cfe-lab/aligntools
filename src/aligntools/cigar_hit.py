@@ -186,14 +186,14 @@ class CigarHit(Hashable):
 
         if not (self.touches_in_query(other) and
                 self.touches_in_reference(other)):
-            raise ex.CigarConnectError("Cannot combine CIGAR hits that"
-                                       " do not touch in both reference"
-                                       " and query coordinates.")
+            raise ex.CigarAddError("Cannot combine CIGAR hits that"
+                                   " do not touch in both reference"
+                                   " and query coordinates.")
 
         # Sort by reference position first, then by query position
         if (self.r_st, self.q_st) > (other.r_st, other.q_st):
-            raise ex.CigarConnectError("Combined CIGAR hits must be"
-                                       " ordered, but they are not.")
+            raise ex.CigarAddError("Combined CIGAR hits must be"
+                                   " ordered, but they are not.")
 
         combined_cigar = self.cigar + other.cigar
         return CigarHit(cigar=combined_cigar,

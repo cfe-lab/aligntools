@@ -1,7 +1,7 @@
 
 from aligntools.exceptions import CigarError, CoersionError, \
     ParseError, InvalidOperationError, CigarHitRangeError, \
-    CigarConnectError
+    CigarConnectError, CigarAddError
 from .cigar_hit import CigarHit, connect_nonoverlapping_cigar_hits, \
     drop_overlapping_cigar_hits
 from .coordinate_mapping import CoordinateMapping
@@ -16,6 +16,7 @@ __all__ = [
     'InvalidOperationError',
     'CigarHitRangeError',
     'CigarConnectError',
+    'CigarAddError',
     'CigarActions',
     'Cigar',
     'CigarHit',

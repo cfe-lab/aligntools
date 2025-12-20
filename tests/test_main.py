@@ -1077,9 +1077,9 @@ def test_cigar_hit_connection_errors(hit_a, hit_b, expected_error):
 @pytest.mark.parametrize(
     "hit_a, hit_b, expected_error",
     [
-        ("4M@1->1", "5M@2->3", ex.CigarConnectError),  # Overlapping hits
-        ("5M@2->3", "4M@1->1", ex.CigarConnectError),  # Overlapping hits
-        ("4M@1->1", "5M@9->9", ex.CigarConnectError),  # Non touching hits
+        ("4M@1->1", "5M@2->3", ex.CigarAddError),  # Overlapping hits
+        ("5M@2->3", "4M@1->1", ex.CigarAddError),  # Overlapping hits
+        ("4M@1->1", "5M@9->9", ex.CigarAddError),  # Non touching hits
     ]
 )
 def test_cigar_hit_add_errors(hit_a, hit_b, expected_error):

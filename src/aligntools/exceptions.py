@@ -38,6 +38,11 @@ class CigarConnectError(ValueError, CigarError):
     pass
 
 
+class CigarAddError(ValueError, CigarError):
+    """Exception raised for errors in adding CIGAR hits."""
+    pass
+
+
 class CigarCutError(IndexError, CigarError):
     """
     Exception raised for errors in cutting CIGAR
