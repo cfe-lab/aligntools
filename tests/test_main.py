@@ -1163,6 +1163,56 @@ def test_invalid_from_msa_due_to_length_mismatch(reference, query):
         Cigar.from_msa(reference, query)
 
 
+@pytest.mark.parametrize(
+    "reference, query, expected_hit_str",
+    [
+        # No gaps
+        ("ACTG", "ACTG", "4=@1->1"),
+        # Mutations
+        ("ACAG", "ACTG", "2=1X1=@1->1"),
+        # Leading insertions
+        ("---ACTG", "TTTACTG", "4=@4->1"),
+        # Leading deletions
+        ("TTTACTG", "---ACTG", "4=@1->4"),
+        # Trailing insertions
+        ("ACTG---", "ACTGTTT", "4=@1->1"),
+        # Trailing deletions
+        ("ACTGTTT", "ACTG---", "4=@1->1"),
+        # Both leading and trailing insertions
+        ("---ACTG---", "TTTACTGTTT", "4=@4->1"),
+        # Both leading and trailing deletions
+        ("TTTACTGTTT", "---ACTG---", "4=@1->4"),
+        # Mixed operations
+        ("--A-C--", "TTA-GCT", "1=1X@3->1"),
+        # Mixed operations
+        ("--ATC--", "TTA-GCT", "1=1D1X@3->1"),
+        # All insertions
+        ("---", "TTT", ""),
+        # All deletions
+        ("TTT", "---", ""),
+        # Empty sequences
+        ("", "", ""),
+        # Single match
+        ("A", "A", "1=@1->1"),
+        # Single insertion
+        ("-", "A", ""),
+        # Single deletion
+        ("A", "-", ""),
+        # Complex case
+        ("----ATCG----", "GGGGATCGCCCC", "4=@5->1"),
+    ]
+)
+def test_cigar_hit_from_msa(reference, query, expected_hit_str):
+    hit = CigarHit.from_msa(reference, query)
+    expected_hit = parsed_hit(expected_hit_str) if expected_hit_str else None
+    if expected_hit_str:
+        assert hit == expected_hit
+    else:
+        # For cases where expected is empty, check if lengths are 0
+        assert hit.cigar.ref_length == 0
+        assert hit.cigar.query_length == 0
+
+
 connect_cigar_hits_cases = [
     # Non-overlapping hits should be connected with deletions/insertions
     (["4M@1->1", "4M@8->10"], ["4M5D3I4M@1->1"]),
