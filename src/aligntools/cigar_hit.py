@@ -340,7 +340,8 @@ class CigarHit(Hashable):
 
         return self.cigar.coordinate_mapping.translate(self.r_st, self.q_st)
 
-    def from_msa(self, reference_seq: Sequence[str], query_seq: Sequence[str]) -> 'CigarHit':
+    @staticmethod
+    def from_msa(reference_seq: Sequence[str], query_seq: Sequence[str]) -> 'CigarHit':
         """
         Constructs a CigarHit from a multiple sequence alignment (MSA)
         representation, using the original reference and query sequences.
