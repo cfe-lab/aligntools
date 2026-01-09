@@ -340,6 +340,19 @@ class CigarHit(Hashable):
 
         return self.cigar.coordinate_mapping.translate(self.r_st, self.q_st)
 
+    def to_msa(self, reference_seq: Sequence[str], query_seq: Sequence[str]
+               ) -> Tuple[str, str]:
+        """
+        Constructs a multiple sequence alignment (MSA) representation
+        for this CigarHit, using the original reference and query
+        sequences. It aligns the sequences according to the CIGAR
+        operations, introducing gaps ('-') as necessary to reflect
+        insertions or deletions.
+        """
+
+        return self.cigar.to_msa(reference_seq[(self.r_st - 1):self.r_ei],
+                                 query_seq[(self.q_st - 1):self.q_ei])
+
     @staticmethod
     def from_msa(reference_seq: Sequence[str], query_seq: Sequence[str]) -> 'CigarHit':
         """
@@ -353,19 +366,6 @@ class CigarHit(Hashable):
                         q_st=1,
                         q_ei=cigar.query_length)
         return full.lstrip_query().rstrip_query().lstrip_reference().rstrip_reference()
-
-    def to_msa(self, reference_seq: Sequence[str], query_seq: Sequence[str]
-               ) -> Tuple[str, str]:
-        """
-        Constructs a multiple sequence alignment (MSA) representation
-        for this CigarHit, using the original reference and query
-        sequences. It aligns the sequences according to the CIGAR
-        operations, introducing gaps ('-') as necessary to reflect
-        insertions or deletions.
-        """
-
-        return self.cigar.to_msa(reference_seq[(self.r_st - 1):self.r_ei],
-                                 query_seq[(self.q_st - 1):self.q_ei])
 
     def translate(self, reference_delta: int, query_delta: int) -> 'CigarHit':
         return CigarHit(cigar=self.cigar,
