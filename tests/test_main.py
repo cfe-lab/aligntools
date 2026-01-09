@@ -1213,6 +1213,33 @@ def test_cigar_hit_from_msa(reference, query, expected_hit_str):
         assert hit.cigar.query_length == 0
 
 
+@pytest.mark.parametrize(
+    "hit_str",
+    [
+        "4=@1->1",
+        "2=2X@1->1",
+        "1=1I1=1D1X@1->1",
+        "10=@5->10",
+        "3=1X2=@2->3",
+    ]
+)
+def test_cigar_hit_relax(hit_str):
+    hit = parsed_hit(hit_str)
+    relaxed_hit = hit.relax()
+
+    # Check that positions are unchanged
+    assert relaxed_hit.r_st == hit.r_st
+    assert relaxed_hit.r_ei == hit.r_ei
+    assert relaxed_hit.q_st == hit.q_st
+    assert relaxed_hit.q_ei == hit.q_ei
+
+    # Check that cigar is relaxed
+    assert relaxed_hit.cigar == hit.cigar.relax()
+
+    # Check that relaxing again is idempotent
+    assert relaxed_hit.relax() == relaxed_hit
+
+
 connect_cigar_hits_cases = [
     # Non-overlapping hits should be connected with deletions/insertions
     (["4M@1->1", "4M@8->10"], ["4M5D3I4M@1->1"]),
