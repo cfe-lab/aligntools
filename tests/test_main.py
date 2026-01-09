@@ -1182,6 +1182,10 @@ def test_invalid_from_msa_due_to_length_mismatch(reference, query):
         ("---ACTG---", "TTTACTGTTT", "4=@4->1"),
         # Both leading and trailing deletions
         ("TTTACTGTTT", "---ACTG---", "4=@1->4"),
+        # Both leading and trailing deletions
+        ("TTTACTA---", "---ACTGAAA", "3=1X@1->4"),
+        # Both leading and trailing deletions
+        ("---ACTAACT", "ACTGAAA---", "3X1=@4->1"),
         # Mixed operations
         ("--A-C--", "TTA-GCT", "1=1X@3->1"),
         # Mixed operations
