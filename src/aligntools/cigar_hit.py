@@ -340,6 +340,19 @@ class CigarHit(Hashable):
 
         return self.cigar.coordinate_mapping.translate(self.r_st, self.q_st)
 
+    def relax(self) -> 'CigarHit':
+        """
+        Returns a relaxed version of this CigarHit,
+        where matches and mismatches are represented with 'M's.
+        """
+
+        relaxed_cigar = self.cigar.relax()
+        return CigarHit(cigar=relaxed_cigar,
+                        r_st=self.r_st,
+                        r_ei=self.r_ei,
+                        q_st=self.q_st,
+                        q_ei=self.q_ei)
+
     def to_msa(self, reference_seq: Sequence[str], query_seq: Sequence[str]
                ) -> Tuple[str, str]:
         """
